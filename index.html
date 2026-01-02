@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clash Royale Game</title>
+    <link rel="stylesheet" href="css/main.css?v=2">
+    <link rel="stylesheet" href="css/menu.css?v=2">
+    <link rel="stylesheet" href="css/game.css?v=4">
+    <link rel="stylesheet" href="css/deck.css?v=3">
+    <link rel="stylesheet" href="css/inventory.css?v=2">
+    <link rel="stylesheet" href="css/shop.css?v=2">
+    <link rel="stylesheet" href="css/ranking.css?v=2">
+    <link rel="stylesheet" href="css/trophy-road.css?v=2">
+</head>
+<body>
+    <div id="app">
+        <!-- MENU GŁÓWNE -->
+        <div id="menu" class="screen active">
+            <div class="top-bar">
+                <div class="stat-box">
+                    <span class="stat-icon">🏆</span>
+                    <span id="menu-trophies">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-icon">💰</span>
+                    <span id="menu-coins">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-icon">💎</span>
+                    <span id="menu-gems">0</span>
+                </div>
+            </div>
+
+            <h1 class="game-title">⚔️ Clash Royale ⚔️</h1>
+
+            <div class="menu-buttons">
+                <button class="menu-btn play-btn" id="play-button">
+                    <span class="btn-icon">⚔️</span>
+                    <span class="btn-text">GRAJ</span>
+                </button>
+                <button class="menu-btn deck-btn" id="deck-button">
+                    <span class="btn-icon">🃏</span>
+                    <span class="btn-text">DECK</span>
+                </button>
+                <button class="menu-btn trophy-road-btn" id="trophy-road-button">
+                    <span class="btn-icon">🛣️</span>
+                    <span class="btn-text">ALEJA PUCHARÓW</span>
+                </button>
+                <button class="menu-btn shop-btn" id="shop-button">
+                    <span class="btn-icon">🛒</span>
+                    <span class="btn-text">SKLEP</span>
+                </button>
+                <button class="menu-btn ranking-btn" id="ranking-button">
+                    <span class="btn-icon">👑</span>
+                    <span class="btn-text">RANKING</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- GRA -->
+        <div id="game" class="screen">
+            <div class="game-header">
+                <div id="opponent-info">
+                    <div id="opponent-name">Bot</div>
+                    <div>🏆 <span id="opponent-trophies">0</span></div>
+                </div>
+                <div id="game-time">2:00</div>
+            </div>
+
+            <div id="battlefield">
+                <!-- Tu będą pojawiać się jednostki i wieże -->
+            </div>
+
+            <div id="game-controls">
+                <div id="elixir-container">
+                    <div id="elixir-bar-bg">
+                        <div id="elixir-bar"></div>
+                    </div>
+                    <div id="elixir-text">10/10</div>
+                </div>
+
+                <div id="card-panel">
+                    <div class="card-slot" data-card="0">
+                        <div class="card-icon">🗡️</div>
+                        <div class="card-cost">3</div>
+                    </div>
+                    <div class="card-slot" data-card="1">
+                        <div class="card-icon">🏹</div>
+                        <div class="card-cost">3</div>
+                    </div>
+                    <div class="card-slot" data-card="2">
+                        <div class="card-icon">🔥</div>
+                        <div class="card-cost">4</div>
+                    </div>
+                    <div class="card-slot" data-card="3">
+                        <div class="card-icon">👹</div>
+                        <div class="card-cost">5</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DECK -->
+        <div id="deck" class="screen">
+            <div class="deck-header">
+                <h2>⚔️ Twoja Talia ⚔️</h2>
+                <button class="back-btn" id="deck-back">◀ Powrót</button>
+            </div>
+            <div id="deck-content">
+                <div class="deck-section-title">Twoja talia:</div>
+                <div id="deck-slots" class="deck-slots"></div>
+                <div id="available-cards-container" class="cards-grid"></div>
+            </div>
+        </div>
+
+        <!-- EKWIPUNEK -->
+        <div id="inventory" class="screen">
+            <div class="inventory-header">
+                <h2>🎒 Ekwipunek 🎒</h2>
+                <button class="back-btn" id="inventory-back">◀ Powrót</button>
+            </div>
+            <div id="inventory-content">
+                <div class="inventory-stats">
+                    <div class="inventory-stat">
+                        <span class="stat-label">Skrzynek:</span>
+                        <span class="stat-value" id="inventory-chest-count">0</span>
+                    </div>
+                </div>
+                <div id="inventory-chests" class="inventory-chests"></div>
+            </div>
+        </div>
+
+        <!-- SKLEP -->
+        <div id="shop" class="screen">
+            <div class="shop-header">
+                <h2>🛒 Sklep 🛒</h2>
+                <button class="back-btn" id="shop-back">◀ Powrót</button>
+            </div>
+            <div id="shop-content">
+                <div class="wallet-display">
+                    <div class="wallet-icon">💳</div>
+                    <div class="wallet-info">
+                        <div class="wallet-label">Saldo portfela:</div>
+                        <div class="wallet-amount" id="wallet-pln">0.00 PLN</div>
+                    </div>
+                </div>
+                <div id="promo-code-section" class="promo-section">
+                    <input type="text" id="promo-input" placeholder="Wpisz kod promocyjny...">
+                    <button id="promo-button">✓ Użyj kodu</button>
+                </div>
+                <div id="shop-items" class="shop-items"></div>
+            </div>
+        </div>
+
+        <!-- RANKING -->
+        <div id="ranking" class="screen">
+            <div class="ranking-header">
+                <h2>👑 Ranking 👑</h2>
+                <button class="back-btn" id="ranking-back">◀ Powrót</button>
+            </div>
+            <div id="ranking-content">
+                <div id="player-rank-info" class="player-rank-info"></div>
+                <div id="ranking-list" class="ranking-list"></div>
+            </div>
+        </div>
+
+        <!-- ALEJA PUCHARÓW -->
+        <div id="trophy-road" class="screen">
+            <div class="trophy-road-header">
+                <h2>🛣️ Aleja Pucharów 🛣️</h2>
+                <button class="back-btn" id="trophy-road-back">◀ Powrót</button>
+            </div>
+            <div id="trophy-road-content">
+                <div id="trophy-road-rewards"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/game/Tower.js?v=8"></script>
+    <script src="js/game/Unit.js?v=8"></script>
+    <script src="js/game/Bot.js?v=8"></script>
+    <script src="js/game/GameEngine.js?v=8"></script>
+    <script src="js/utils/LocalStorage.js?v=8"></script>
+    <script src="js/utils/ChestSystem.js?v=8"></script>
+    <script src="js/ui/DeckManager.js?v=10"></script>
+    <script src="js/ui/InventoryManager.js?v=8"></script>
+    <script src="js/ui/ShopManager.js?v=8"></script>
+    <script src="js/ui/RankingManager.js?v=8"></script>
+    <script src="js/ui/TrophyRoadManager.js?v=8"></script>
+    <script src="js/ui/MenuManager.js?v=8"></script>
+    <script>
+        // Inicjalizacja managerów
+        console.log('Starting managers initialization...');
+        
+        try {
+            const deckManager = new DeckManager();
+            console.log('DeckManager created');
+        } catch (e) {
+            console.error('Error creating DeckManager:', e);
+        }
+        
+        try {
+            const inventoryManager = new InventoryManager();
+            console.log('InventoryManager created');
+        } catch (e) {
+            console.error('Error creating InventoryManager:', e);
+        }
+        
+        try {
+            const shopManager = new ShopManager();
+            console.log('ShopManager created');
+        } catch (e) {
+            console.error('Error creating ShopManager:', e);
+        }
+        
+        let rankingManager;
+        try {
+            rankingManager = new RankingManager();
+            console.log('RankingManager created');
+        } catch (e) {
+            console.error('Error creating RankingManager:', e);
+        }
+        
+        try {
+            window.trophyRoadManager = new TrophyRoadManager();
+            console.log('TrophyRoadManager created and assigned to window');
+        } catch (e) {
+            console.error('Error creating TrophyRoadManager:', e);
+        }
+        
+        try {
+            const menuManager = new MenuManager();
+            console.log('MenuManager created');
+            
+            // Ustaw globalnie dla dostępu z innych klas
+            window.menuManager = menuManager;
+            window.rankingManager = rankingManager;
+            console.log('Global variables set');
+        } catch (e) {
+            console.error('Error creating MenuManager:', e);
+        }
+    </script>
+    <script src="js/app.js?v=3"></script>
+</body>
+</html>

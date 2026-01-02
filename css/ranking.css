@@ -1,0 +1,135 @@
+/* Ekran rankingu */
+#ranking {
+    flex-direction: column;
+    background: linear-gradient(135deg, #fee140 0%, #ffa500 100%);
+    padding: 10px;
+}
+
+.ranking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.ranking-header h2 {
+    font-size: 18px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.player-rank-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.player-rank-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.player-rank-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.rank-detail {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+.rank-label {
+    opacity: 0.8;
+}
+
+.rank-value {
+    font-weight: bold;
+}
+
+.ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ranking-item {
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+    border: 2px solid #ffd700;
+    border-radius: 25px;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.ranking-position {
+    font-size: 20px;
+    font-weight: bold;
+    min-width: 35px;
+    text-align: center;
+}
+
+.ranking-position.top-1 {
+    color: #ffd700;
+    text-shadow: 0 0 10px #ffd700;
+}
+
+.ranking-position.top-2 {
+    color: #c0c0c0;
+    text-shadow: 0 0 10px #c0c0c0;
+}
+
+.ranking-position.top-3 {
+    color: #cd7f32;
+    text-shadow: 0 0 10px #cd7f32;
+}
+
+.ranking-player-info {
+    flex: 1;
+}
+
+.ranking-player-name {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.ranking-player-league {
+    font-size: 10px;
+    opacity: 0.8;
+}
+
+.ranking-trophies {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+.league-progress {
+    margin-top: 10px;
+}
+
+.league-bar-bg {
+    height: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.league-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+    border-radius: 4px;
+    transition: width 0.3s;
+}
