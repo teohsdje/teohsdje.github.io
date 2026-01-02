@@ -1,0 +1,205 @@
+/* Ekran decku */
+#deck {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    padding: 10px;
+}
+
+#deck.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.deck-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.deck-header h2 {
+    font-size: 18px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+#deck-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Sekcja "Twoja talia:" */
+.deck-section-title {
+    font-size: 16px;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 8px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+/* 4 karty w jednej linii */
+.deck-slots {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.deck-slot {
+    aspect-ratio: 0.7;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px dashed rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.deck-slot.filled {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 2px solid #ffd700;
+}
+
+.empty-slot-text {
+    font-size: 32px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.deck-card-icon {
+    font-size: 36px;
+    margin-bottom: 2px;
+}
+
+.deck-card-name {
+    font-size: 9px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 2px;
+}
+
+.deck-card-level {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    background: #ffd700;
+    color: #000;
+    font-weight: bold;
+    font-size: 9px;
+    padding: 2px 4px;
+    border-radius: 8px;
+}
+
+.deck-card-cost {
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    background: #ff00ff;
+    color: white;
+    font-weight: bold;
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 8px;
+}
+
+.remove-from-deck-btn {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    background: #ff0000;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* Lista kart */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.card-item {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 3px solid #ffd700;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.card-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.5);
+}
+
+.card-item.in-deck {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.card-item-icon {
+    font-size: 36px;
+    margin-bottom: 5px;
+}
+
+.card-item-name {
+    font-size: 11px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.card-item-stats {
+    display: flex;
+    gap: 8px;
+    font-size: 10px;
+    color: white;
+}
+
+.card-upgrade-section {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.upgrade-btn {
+    width: 100%;
+    padding: 8px;
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.upgrade-btn:hover {
+    transform: scale(1.05);
+}
+
+.upgrade-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
