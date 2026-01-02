@@ -1,0 +1,187 @@
+/* Menu główne w stylu Clash Royale */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial Black', 'Arial Bold', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+#app {
+    width: 100vw;
+    height: 100vh;
+    max-width: 400px;
+    margin: 0 auto;
+    position: relative;
+    background: linear-gradient(180deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
+
+.screen {
+    display: none;
+    width: 100%;
+    min-height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow-y: auto;
+}
+
+.screen.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Top bar z statystykami */
+.top-bar {
+    display: flex;
+    justify-content: space-around;
+    padding: 15px 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 3px solid #ffd700;
+}
+
+.stat-box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 8px 15px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: bold;
+    color: white;
+    font-size: 16px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+.stat-icon {
+    font-size: 20px;
+}
+
+/* Tytuł gry */
+.game-title {
+    text-align: center;
+    font-size: 36px;
+    color: #ffd700;
+    text-shadow: 
+        3px 3px 0 #000,
+        -3px -3px 0 #000,
+        3px -3px 0 #000,
+        -3px 3px 0 #000,
+        0 0 20px rgba(255, 215, 0, 0.8);
+    margin: 40px 0 30px 0;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Przyciski menu */
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 0 30px;
+    margin-top: 20px;
+}
+
+.menu-btn {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border: none;
+    border-radius: 15px;
+    padding: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    cursor: pointer;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+    border: 3px solid rgba(255,255,255,0.3);
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.menu-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.4);
+}
+
+.menu-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.play-btn {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    font-size: 28px;
+    padding: 25px;
+}
+
+.deck-btn {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.shop-btn {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.ranking-btn {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.btn-icon {
+    font-size: 32px;
+    filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.5));
+}
+
+.btn-text {
+    font-size: 24px;
+    letter-spacing: 2px;
+}
+
+/* Przycisk powrotu */
+.back-btn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: 2px solid white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.3s;
+}
+
+.back-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.05);
+}
+
+.back-btn:active {
+    transform: scale(0.95);
+}
+
+#game .back-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    left: auto;
+    padding: 6px 12px;
+    font-size: 14px;
+}
