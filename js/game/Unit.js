@@ -215,22 +215,15 @@ class Unit {
             }
         }
 
-        // SPECJALNA LOGIKA DLA BOMB SKELETON - wybuch na podstawie pozycji Y
-        if (this.isSuicideBomber && !this.hasExploded && this.target) {
-            // Gracz - bombuje wieże przeciwnika (góra), bot - bombuje wieże gracza (dół)
-            const targetY = this.owner === 'player' ? 50 : 400; // Y wież
-            const currentDistance = Math.abs(this.y - targetY);
-            
-            // Wybuch gdy jest blisko pozycji Y wieży
-            if (currentDistance <= 150) {
-                this.performAttack(deltaTime);
-                return; // Koniec aktualizacji po wybuchu
-            }
-        }
-
         // Move towards target or attack
         if (this.target) {
             const distance = this.getDistance(this.target);
+            
+            // BOMB SKELETON - wybuchaj gdy dotrzesz blisko celu (dotykasz wieży)
+            if (this.isSuicideBomber && !this.hasExploded && distance <= 50) {
+                this.performAttack(deltaTime);
+                return; // Koniec aktualizacji po wybuchu
+            }
             
             if (distance <= this.range) {
                 // In range - attack
