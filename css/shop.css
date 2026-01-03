@@ -1,0 +1,135 @@
+/* Ekran sklepu */
+#shop {
+    flex-direction: column;
+    background: linear-gradient(135deg, #43e97b 0%, #38b000 100%);
+    padding: 20px;
+}
+
+.shop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.shop-header h2 {
+    font-size: 24px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.wallet-display {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.wallet-icon {
+    font-size: 36px;
+}
+
+.wallet-label {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.wallet-amount {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.promo-section {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#promo-input {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+#promo-button {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#promo-button:hover {
+    transform: scale(1.05);
+}
+
+.shop-items {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.shop-item {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 3px solid #ffd700;
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.item-icon {
+    font-size: 48px;
+}
+
+.item-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+}
+
+.item-description {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+}
+
+.item-price {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.buy-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.buy-btn:hover {
+    transform: scale(1.05);
+}
+
+.buy-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
