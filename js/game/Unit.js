@@ -248,14 +248,23 @@ class Unit {
     }
 
     findTargetTower(towers) {
-        // Fireball - zawsze tylko wieże, nigdy jednostki
+        // Fireball - najpierw wieże pomocnicze, potem główna
         const enemyOwner = this.owner === 'player' ? 'opponent' : 'player';
         const enemyTowers = towers.filter(t => t.owner === enemyOwner && !t.isDestroyed);
         
         if (enemyTowers.length > 0) {
-            // Wybierz losową wieżę
-            const randomTower = enemyTowers[Math.floor(Math.random() * enemyTowers.length)];
-            this.target = randomTower;
+            // Najpierw spróbuj znaleźć wieże pomocnicze (left lub right)
+            const sideTowers = enemyTowers.filter(t => t.type === 'left' || t.type === 'right');
+            
+            if (sideTowers.length > 0) {
+                // Wybierz losową wieżę pomocniczą
+                const randomTower = sideTowers[Math.floor(Math.random() * sideTowers.length)];
+                this.target = randomTower;
+            } else {
+                // Jeśli nie ma wież pomocniczych, atakuj główną
+                const mainTower = enemyTowers.find(t => t.type === 'main');
+                this.target = mainTower || null;
+            }
         } else {
             // Jeśli wszystkie wieże zniszczone, zginąć
             this.alive = false;
@@ -274,18 +283,46 @@ class Unit {
             if (this.isSuicideBomber) {
                 console.log('BOMB SKELETON szuka celu. Wież:', towers.length);
             }
-            towers.forEach(tower => {
-                if (tower.owner === enemyOwner && !tower.isDestroyed) {
+            
+            // Najpierw szukaj wież pomocniczych (left i right)
+            const sideTowers = towers.filter(t => 
+                t.owner === enemyOwner && 
+                !t.isDestroyed && 
+                (t.type === 'left' || t.type === 'right')
+            );
+            
+            if (sideTowers.length > 0) {
+                // Atakuj najbliższą wieżę pomocniczą
+                sideTowers.forEach(tower => {
                     const distance = this.getDistance(tower);
                     if (this.isSuicideBomber) {
-                        console.log('  Wieża:', tower.type, 'odległość:', distance);
+                        console.log('  Wieża pomocnicza:', tower.type, 'odległość:', distance);
                     }
                     if (distance < closestDistance) {
                         closestDistance = distance;
                         this.target = tower;
                     }
-                }
-            });
+                });
+            } else {
+                // Jeśli nie ma wież pomocniczych, atakuj główną
+                const mainTowers = towers.filter(t => 
+                    t.owner === enemyOwner && 
+                    !t.isDestroyed && 
+                    t.type === 'main'
+                );
+                
+                mainTowers.forEach(tower => {
+                    const distance = this.getDistance(tower);
+                    if (this.isSuicideBomber) {
+                        console.log('  Wieża główna:', tower.type, 'odległość:', distance);
+                    }
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        this.target = tower;
+                    }
+                });
+            }
+            
             if (this.isSuicideBomber) {
                 console.log('BOMB SKELETON znalazł cel:', this.target);
             }
@@ -313,17 +350,37 @@ class Unit {
             }
         });
 
-        // If no units in range, target towers
+        // If no units in range, target towers (najpierw pomocnicze, potem główne)
         if (!this.target || closestDistance > 200) {
-            towers.forEach(tower => {
-                if (tower.owner === enemyOwner && !tower.isDestroyed) {
+            closestDistance = Infinity;
+            
+            // Najpierw szukaj wież pomocniczych
+            const sideTowers = towers.filter(t => 
+                t.owner === enemyOwner && 
+                !t.isDestroyed && 
+                (t.type === 'left' || t.type === 'right')
+            );
+            
+            if (sideTowers.length > 0) {
+                sideTowers.forEach(tower => {
                     const distance = this.getDistance(tower);
                     if (distance < closestDistance) {
                         closestDistance = distance;
                         this.target = tower;
                     }
-                }
-            });
+                });
+            } else {
+                // Jeśli nie ma wież pomocniczych, atakuj główną
+                towers.forEach(tower => {
+                    if (tower.owner === enemyOwner && !tower.isDestroyed && tower.type === 'main') {
+                        const distance = this.getDistance(tower);
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            this.target = tower;
+                        }
+                    }
+                });
+            }
         }
     }
 

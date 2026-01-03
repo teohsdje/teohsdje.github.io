@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Hash</title>
+</head>
+<body>
+    <h1>Test Hash Generator</h1>
+    <script>
+        async function sha256(text) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(text);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+
+        async function testHashes() {
+            const hash1 = await sha256('PAPARIPA');
+            const hash2 = await sha256('ALFREDKOPEC');
+            
+            console.log('PAPARIPA hash:', hash1);
+            console.log('Part1:', hash1.substring(0, 32));
+            console.log('Part2:', hash1.substring(32));
+            console.log('');
+            console.log('ALFREDKOPEC hash:', hash2);
+            console.log('Part1:', hash2.substring(0, 32));
+            console.log('Part2:', hash2.substring(32));
+            
+            alert('PAPARIPA hash: ' + hash1 + '\n\n' + 
+                  'ALFREDKOPEC hash: ' + hash2);
+        }
+
+        testHashes();
+    </script>
+</body>
+</html>

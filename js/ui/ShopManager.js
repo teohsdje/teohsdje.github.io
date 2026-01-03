@@ -1,5 +1,16 @@
 class ShopManager {
     constructor() {
+        // Hash SHA-256 hasła podzielony na części (dla bezpieczeństwa)
+        this.hashPart1 = '34b9d6131e1aa02283da61e8d8857945';
+        this.hashPart2 = '43625284392cd2583445ccdf70c5596a';
+        
+        // Hash SHA-256 kodu admina podzielony na części
+        this.adminHashPart1 = '4e8a8eb7a7afe9d22a6d2820a3f0dc18';
+        this.adminHashPart2 = '3d457dc463029de3133aa32cbccee66c';
+        
+        // Flaga zapobiegająca wielokrotnemu wywołaniu
+        this.isProcessingPromo = false;
+        
         this.items = [
             // Monety (kupowane za PLN)
             { id: 'coins50', name: '50 Monet', icon: '💰', price: 0.50, type: 'coins', amount: 50, currency: 'pln' },
@@ -33,16 +44,30 @@ class ShopManager {
     }
 
     setupEventListeners() {
-        document.getElementById('shop-back').addEventListener('click', () => {
+        const backBtn = document.getElementById('shop-back');
+        const promoBtn = document.getElementById('promo-button');
+        const promoInput = document.getElementById('promo-input');
+        
+        // Usuń stare listenery przez klonowanie elementów
+        const newPromoBtn = promoBtn.cloneNode(true);
+        promoBtn.parentNode.replaceChild(newPromoBtn, promoBtn);
+        
+        const newPromoInput = promoInput.cloneNode(true);
+        promoInput.parentNode.replaceChild(newPromoInput, promoInput);
+        
+        backBtn.addEventListener('click', () => {
             menuManager.showScreen('menu');
         });
 
-        document.getElementById('promo-button').addEventListener('click', () => {
-            this.redeemPromoCode();
+        newPromoBtn.addEventListener('click', async () => {
+            await this.redeemPromoCode();
         });
 
-        document.getElementById('promo-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.redeemPromoCode();
+        newPromoInput.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                await this.redeemPromoCode();
+            }
         });
     }
 
@@ -326,22 +351,309 @@ class ShopManager {
         }, 3000);
     }
 
-    redeemPromoCode() {
-        const input = document.getElementById('promo-input');
-        const code = input.value.toUpperCase().trim();
+    async sha256(text) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(text);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    }
 
-        if (code === 'PAPARIPA') {
-            const pln = parseFloat(localStorage.getItem('pln') || 0);
-            const newPln = (pln + 10).toFixed(2);
-            localStorage.setItem('pln', newPln);
-            alert('✓ Kod PAPARIPA aktywowany!\n+10.00 PLN');
-            input.value = '';
-            // Zapisz stan gry po użyciu kodu
-            menuManager.saveGameState('Kod PAPARIPA');
-            this.render();
-        } else if (code.length > 0) {
-            alert('❌ Nieznany kod promocyjny!');
+    async redeemPromoCode() {
+        // Zapobiegaj wielokrotnemu wywołaniu
+        if (this.isProcessingPromo) {
+            console.log('Kod jest już przetwarzany, ignoruję...');
+            return;
         }
+        
+        this.isProcessingPromo = true;
+        
+        try {
+            const input = document.getElementById('promo-input');
+            const code = input.value.toUpperCase().trim();
+
+            if (code.length > 0) {
+                // Sprawdź kod MILO (jednorazowy, nieszyfrowany)
+                if (code === 'MILO') {
+                    const miloUsed = localStorage.getItem('miloCodeUsed');
+                    if (miloUsed === 'true') {
+                        alert('❌ Kod MILO został już wykorzystany!');
+                        input.value = '';
+                        return;
+                    }
+                    
+                    const pln = parseFloat(localStorage.getItem('pln') || 0);
+                    const newPln = (pln + 5).toFixed(2);
+                    localStorage.setItem('pln', newPln);
+                    localStorage.setItem('miloCodeUsed', 'true');
+                    alert('✓ Kod MILO aktywowany!\n+5.00 PLN\n\nKod jest jednorazowy i został zużyty.');
+                    input.value = '';
+                    menuManager.saveGameState('Kod MILO');
+                    this.render();
+                    return;
+                }
+                
+                // Generuj hash z wprowadzonego kodu
+                const codeHash = await this.sha256(code);
+                console.log('Wprowadzony kod:', code);
+                console.log('Hash kodu:', codeHash);
+                
+                // Połącz części zapisanego hasha
+                const correctHash = this.hashPart1 + this.hashPart2;
+                const adminHash = this.adminHashPart1 + this.adminHashPart2;
+                
+                console.log('Oczekiwany hash PAPARIPA:', correctHash);
+                console.log('Oczekiwany hash ALFREDKOPEC:', adminHash);
+                console.log('Czy pasuje do PAPARIPA?', codeHash === correctHash);
+                console.log('Czy pasuje do ALFREDKOPEC?', codeHash === adminHash);
+                
+                if (codeHash === correctHash) {
+                    const pln = parseFloat(localStorage.getItem('pln') || 0);
+                    const newPln = (pln + 10).toFixed(2);
+                    localStorage.setItem('pln', newPln);
+                    alert('✓ Kod promocyjny aktywowany!\n+10.00 PLN');
+                    input.value = '';
+                    // Zapisz stan gry po użyciu kodu
+                    menuManager.saveGameState('Kod promocyjny');
+                    this.render();
+                } else if (codeHash === adminHash) {
+                    // Otwórz panel admina
+                    console.log('Otwieranie panelu admina...');
+                    input.value = '';
+                    this.showAdminPanel();
+                } else {
+                    alert('❌ Nieznany kod promocyjny!');
+                }
+            }
+        } finally {
+            // Zawsze odblokuj po zakończeniu
+            this.isProcessingPromo = false;
+        }
+    }
+
+    showAdminPanel() {
+        // Utwórz panel admina
+        const panel = document.createElement('div');
+        panel.id = 'admin-panel';
+        panel.className = 'admin-panel';
+        
+        const trophies = parseInt(localStorage.getItem('trophies') || 0);
+        const coins = parseInt(localStorage.getItem('coins') || 0);
+        const gems = parseInt(localStorage.getItem('gems') || 0);
+        
+        panel.innerHTML = `
+            <div class="admin-content">
+                <div class="admin-header">
+                    <h2>🔧 PANEL ADMINA 🔧</h2>
+                    <button class="admin-close" id="admin-close">✖</button>
+                </div>
+                <div class="admin-body">
+                    <div class="admin-field">
+                        <label>🏆 Puchary:</label>
+                        <input type="number" id="admin-trophies" value="${trophies}" min="0">
+                    </div>
+                    <div class="admin-field">
+                        <label>💰 Monety:</label>
+                        <input type="number" id="admin-coins" value="${coins}" min="0">
+                    </div>
+                    <div class="admin-field">
+                        <label>💎 Diamenty:</label>
+                        <input type="number" id="admin-gems" value="${gems}" min="0">
+                    </div>
+                    <button class="admin-save" id="admin-save">💾 Zapisz zmiany</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(panel);
+        
+        // Dodaj style jeśli nie istnieją
+        if (!document.getElementById('admin-panel-style')) {
+            const style = document.createElement('style');
+            style.id = 'admin-panel-style';
+            style.textContent = `
+                .admin-panel {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10000;
+                    animation: fadeIn 0.3s ease-out;
+                    overflow-y: auto;
+                }
+                
+                .admin-content {
+                    background: linear-gradient(135deg, #c31432 0%, #240b36 100%);
+                    border: 3px solid #ff0000;
+                    border-radius: 15px;
+                    padding: 20px;
+                    max-width: 350px;
+                    width: 90%;
+                    max-height: 90vh;
+                    box-shadow: 0 20px 60px rgba(255, 0, 0, 0.5);
+                    animation: slideIn 0.4s ease-out;
+                    overflow-y: auto;
+                }
+                
+                .admin-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 15px;
+                    border-bottom: 2px solid #ff0000;
+                    padding-bottom: 10px;
+                }
+                
+                .admin-header h2 {
+                    color: #fff;
+                    margin: 0;
+                    font-size: 20px;
+                    text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+                }
+                
+                .admin-close {
+                    background: #ff0000;
+                    color: white;
+                    border: none;
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    font-size: 18px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+                }
+                
+                .admin-close:hover {
+                    background: #cc0000;
+                    transform: rotate(90deg);
+                    box-shadow: 0 6px 15px rgba(255, 0, 0, 0.5);
+                }
+                
+                .admin-body {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+                
+                .admin-field {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    background: rgba(255, 255, 255, 0.1);
+                    padding: 10px;
+                    border-radius: 8px;
+                    border: 1px solid rgba(255, 0, 0, 0.3);
+                }
+                
+                .admin-field label {
+                    color: #fff;
+                    font-size: 16px;
+                    font-weight: bold;
+                    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+                }
+                
+                .admin-field input {
+                    width: 120px;
+                    padding: 8px;
+                    font-size: 16px;
+                    border: 2px solid #ff0000;
+                    border-radius: 8px;
+                    background: rgba(255, 255, 255, 0.9);
+                    color: #333;
+                    font-weight: bold;
+                    text-align: center;
+                }
+                
+                .admin-field input:focus {
+                    outline: none;
+                    border-color: #ff3333;
+                    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+                }
+                
+                .admin-save {
+                    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+                    color: white;
+                    border: none;
+                    padding: 12px 20px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    margin-top: 8px;
+                    transition: all 0.3s;
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                }
+                
+                .admin-save:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 20px rgba(255, 0, 0, 0.6);
+                    background: linear-gradient(135deg, #ff3333 0%, #ee0000 100%);
+                }
+                
+                .admin-save:active {
+                    transform: translateY(0);
+                }
+                
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                    }
+                    to {
+                        opacity: 1;
+                    }
+                }
+                
+                @keyframes slideIn {
+                    from {
+                        transform: translateY(-50px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Dodaj event listenery
+        document.getElementById('admin-close').addEventListener('click', () => {
+            panel.remove();
+        });
+        
+        document.getElementById('admin-save').addEventListener('click', () => {
+            const newTrophies = parseInt(document.getElementById('admin-trophies').value) || 0;
+            const newCoins = parseInt(document.getElementById('admin-coins').value) || 0;
+            const newGems = parseInt(document.getElementById('admin-gems').value) || 0;
+            
+            localStorage.setItem('trophies', newTrophies);
+            localStorage.setItem('coins', newCoins);
+            localStorage.setItem('gems', newGems);
+            
+            alert('✓ Wartości zostały zaktualizowane!\n🏆 Puchary: ' + newTrophies + '\n💰 Monety: ' + newCoins + '\n💎 Diamenty: ' + newGems);
+            
+            // Zapisz stan gry
+            menuManager.saveGameState('Panel admina');
+            menuManager.updateStatsDisplay();
+            this.render();
+            
+            panel.remove();
+        });
+        
+        // Zamknij panel po kliknięciu w tło
+        panel.addEventListener('click', (e) => {
+            if (e.target === panel) {
+                panel.remove();
+            }
+        });
     }
 }
 
