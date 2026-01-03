@@ -286,16 +286,16 @@ class GameEngine {
     }
 
     checkGameEnd() {
-        // Check if player's main tower is destroyed
+        // Check if player's main tower is destroyed (health <= 0 is the only check needed)
         const playerMainTower = this.towers.find(t => t.owner === 'player' && t.type === 'main');
-        if (playerMainTower && playerMainTower.isDestroyed && playerMainTower.health <= 0) {
+        if (playerMainTower && playerMainTower.health <= 0) {
             this.endGame('lose');
             return;
         }
 
-        // Check if opponent's main tower is destroyed
+        // Check if opponent's main tower is destroyed (health <= 0 is the only check needed)
         const opponentMainTower = this.towers.find(t => t.owner === 'opponent' && t.type === 'main');
-        if (opponentMainTower && opponentMainTower.isDestroyed && opponentMainTower.health <= 0) {
+        if (opponentMainTower && opponentMainTower.health <= 0) {
             this.endGame('win');
             return;
         }
