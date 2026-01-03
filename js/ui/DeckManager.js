@@ -35,12 +35,22 @@ class DeckManager {
         const cardLevels = localStorage.getItem('cardLevels');
         if (cardLevels) {
             const levels = JSON.parse(cardLevels);
+            let maxLevel = 1;
             this.allCards.forEach(card => {
                 if (levels[card.id]) {
                     card.level = levels[card.id].level;
                     card.upgradePoints = levels[card.id].upgradePoints;
+                    // Znajdź najwyższy level
+                    if (card.level > maxLevel) {
+                        maxLevel = card.level;
+                    }
                 }
             });
+            // Zapisz najwyższy level
+            localStorage.setItem('playerLevel', maxLevel.toString());
+        } else {
+            // Ustaw playerLevel na 1 jeśli nic nie zostało załadowane
+            localStorage.setItem('playerLevel', '1');
         }
     }
 
@@ -55,10 +65,17 @@ class DeckManager {
 
     saveCardLevels() {
         const levels = {};
+        let maxLevel = 1;
         this.allCards.forEach(card => {
             levels[card.id] = { level: card.level, upgradePoints: card.upgradePoints };
+            // Znajdź najwyższy level spośród wszystkich kart
+            if (card.level > maxLevel) {
+                maxLevel = card.level;
+            }
         });
         localStorage.setItem('cardLevels', JSON.stringify(levels));
+        // Zapisz najwyższy level jako playerLevel (dla wyrównania bota)
+        localStorage.setItem('playerLevel', maxLevel.toString());
     }
 
     setupEventListeners() {

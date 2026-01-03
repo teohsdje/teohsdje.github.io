@@ -221,6 +221,12 @@ class GameEngine {
         const cardData = this.getCardData(cardName);
         if (!cardData) return;
 
+        // Jeśli bot spawna jednostkę, użyj takiego samego levelu co gracz
+        if (owner === 'opponent') {
+            const playerLevel = parseInt(localStorage.getItem('playerLevel') || 1);
+            level = playerLevel;
+        }
+
         // Oblicz statystyki na podstawie poziomu
         const stats = this.calculateStatsForLevel(cardName, level);
 
@@ -282,14 +288,14 @@ class GameEngine {
     checkGameEnd() {
         // Check if player's main tower is destroyed
         const playerMainTower = this.towers.find(t => t.owner === 'player' && t.type === 'main');
-        if (playerMainTower && playerMainTower.isDestroyed) {
+        if (playerMainTower && playerMainTower.isDestroyed && playerMainTower.health <= 0) {
             this.endGame('lose');
             return;
         }
 
         // Check if opponent's main tower is destroyed
         const opponentMainTower = this.towers.find(t => t.owner === 'opponent' && t.type === 'main');
-        if (opponentMainTower && opponentMainTower.isDestroyed) {
+        if (opponentMainTower && opponentMainTower.isDestroyed && opponentMainTower.health <= 0) {
             this.endGame('win');
             return;
         }

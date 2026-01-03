@@ -225,7 +225,13 @@ class Unit {
                 return; // Koniec aktualizacji po wybuchu
             }
             
-            if (distance <= this.range) {
+            // Zwiększ range ataku dla latających jednostek (mają lepszy zasięg)
+            let attackRange = this.range;
+            if (this.isFlying) {
+                attackRange = Math.max(this.range, 60); // Minimum 60 pixels for flying units
+            }
+            
+            if (distance <= attackRange) {
                 // In range - attack
                 this.performAttack(deltaTime);
                 // Jeśli bomb skeleton wybuchł, nie aktualizuj visual (jest już martwy)
