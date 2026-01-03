@@ -19,7 +19,18 @@ class Unit {
         this.targetsTowersOnly = this.checkIfTargetsTowersOnly();
         this.element = null;
         this.isSuicideBomber = (name === 'Bomb Skeleton');
+        this.hasExploded = false; // Flaga dla bomb skeletona
         this.isSpell = (name === 'Fireball');
+        
+        if (this.isSuicideBomber) {
+            console.log('BOMB SKELETON UTWORZONY:', {
+                hp: this.hp,
+                attack: this.attack,
+                range: this.range,
+                targetsTowersOnly: this.targetsTowersOnly,
+                isSuicideBomber: this.isSuicideBomber
+            });
+        }
     }
 
     getSpeed() {
@@ -44,7 +55,7 @@ class Unit {
             case 'P.E.K.K.A': return 30;
             case 'Minion': return 80;
             case 'Dragon': return 100;
-            case 'Bomb Skeleton': return 20;
+            case 'Bomb Skeleton': return 80; // Duży zasięg wybuchu
             default: return 50;
         }
     }
@@ -97,7 +108,7 @@ class Unit {
             case 'Dragon':
                 return 50;
             case 'Bomb Skeleton':
-                return 5;
+                return 10;
             default:
                 return 0;
         }
@@ -137,34 +148,48 @@ class Unit {
             this.hp = 0;
             this.alive = false;
         }
-        this.showDamageNumber(damage);
-        this.updateVisual();
+        
+        // Tylko pokaż damage jeśli element istnieje
+        if (this.element && this.element.parentNode) {
+            this.showDamageNumber(damage);
+        }
+        
+        // Tylko update visual jeśli element istnieje
+        if (this.element) {
+            this.updateVisual();
+        }
     }
 
     showDamageNumber(damage) {
-        if (!this.element) return;
-        
-        const damageText = document.createElement('div');
-        damageText.className = 'damage-number';
-        damageText.textContent = '-' + Math.floor(damage);
-        damageText.style.position = 'absolute';
-        damageText.style.left = (this.x) + 'px';
-        damageText.style.top = (this.y - 30) + 'px';
-        damageText.style.fontSize = '18px';
-        damageText.style.fontWeight = 'bold';
-        damageText.style.color = '#FF0000';
-        damageText.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
-        damageText.style.zIndex = '100';
-        damageText.style.pointerEvents = 'none';
-        damageText.style.animation = 'damage-float 1s ease-out';
-        
-        this.element.parentNode.appendChild(damageText);
-        
-        setTimeout(() => {
-            if (damageText.parentNode) {
-                damageText.parentNode.removeChild(damageText);
-            }
-        }, 1000);
+        // Element i parentNode są już sprawdzone w takeDamage
+        try {
+            const parent = this.element.parentNode;
+            if (!parent) return;
+            
+            const damageText = document.createElement('div');
+            damageText.className = 'damage-number';
+            damageText.textContent = '-' + Math.floor(damage);
+            damageText.style.position = 'absolute';
+            damageText.style.left = (this.x) + 'px';
+            damageText.style.top = (this.y - 30) + 'px';
+            damageText.style.fontSize = '18px';
+            damageText.style.fontWeight = 'bold';
+            damageText.style.color = '#FF0000';
+            damageText.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+            damageText.style.zIndex = '100';
+            damageText.style.pointerEvents = 'none';
+            damageText.style.animation = 'damage-float 1s ease-out';
+            
+            parent.appendChild(damageText);
+            
+            setTimeout(() => {
+                if (damageText.parentNode) {
+                    damageText.parentNode.removeChild(damageText);
+                }
+            }, 1000);
+        } catch (e) {
+            // Cicho ignoruj błędy
+        }
     }
 
     isAlive() {
@@ -180,9 +205,26 @@ class Unit {
                 this.findTargetTower(towers);
             }
         } else {
-            // Find target
-            if (!this.target || !this.target.alive || (this.target.isDestroyed !== undefined && this.target.isDestroyed)) {
+            // Find target - sprawdź czy cel nadal istnieje i jest żywy
+            const targetIsValid = this.target && 
+                                 (this.target.alive === true || 
+                                  (this.target.isDestroyed !== undefined && !this.target.isDestroyed));
+            
+            if (!targetIsValid) {
                 this.findTarget(allUnits, towers);
+            }
+        }
+
+        // SPECJALNA LOGIKA DLA BOMB SKELETON - wybuch na podstawie pozycji Y
+        if (this.isSuicideBomber && !this.hasExploded && this.target) {
+            // Gracz - bombuje wieże przeciwnika (góra), bot - bombuje wieże gracza (dół)
+            const targetY = this.owner === 'player' ? 50 : 400; // Y wież
+            const currentDistance = Math.abs(this.y - targetY);
+            
+            // Wybuch gdy jest blisko pozycji Y wieży
+            if (currentDistance <= 150) {
+                this.performAttack(deltaTime);
+                return; // Koniec aktualizacji po wybuchu
             }
         }
 
@@ -193,6 +235,10 @@ class Unit {
             if (distance <= this.range) {
                 // In range - attack
                 this.performAttack(deltaTime);
+                // Jeśli bomb skeleton wybuchł, nie aktualizuj visual (jest już martwy)
+                if (this.isSuicideBomber && this.hasExploded) {
+                    return;
+                }
             } else {
                 // Move towards target
                 this.moveTowards(this.target, deltaTime);
@@ -202,7 +248,10 @@ class Unit {
             this.moveForward(deltaTime);
         }
 
-        this.updateVisual();
+        // Tylko update visual jeśli element jeszcze istnieje
+        if (this.element) {
+            this.updateVisual();
+        }
     }
 
     findTargetTower(towers) {
@@ -227,17 +276,26 @@ class Unit {
 
         const enemyOwner = this.owner === 'player' ? 'opponent' : 'player';
 
-        // Giant targets only towers
+        // Giant and Bomb Skeleton target only towers
         if (this.targetsTowersOnly) {
+            if (this.isSuicideBomber) {
+                console.log('BOMB SKELETON szuka celu. Wież:', towers.length);
+            }
             towers.forEach(tower => {
                 if (tower.owner === enemyOwner && !tower.isDestroyed) {
                     const distance = this.getDistance(tower);
+                    if (this.isSuicideBomber) {
+                        console.log('  Wieża:', tower.type, 'odległość:', distance);
+                    }
                     if (distance < closestDistance) {
                         closestDistance = distance;
                         this.target = tower;
                     }
                 }
             });
+            if (this.isSuicideBomber) {
+                console.log('BOMB SKELETON znalazł cel:', this.target);
+            }
             return;
         }
 
@@ -305,21 +363,37 @@ class Unit {
     }
 
     performAttack(deltaTime) {
+        // Bomb Skeleton - natychmiastowy atak samobójczy (tylko raz)
+        if (this.isSuicideBomber && !this.hasExploded) {
+            console.log('💥 BOMB SKELETON WYBUCHŁ!', this.target);
+            this.hasExploded = true;
+            
+            // Najpierw zadaj obrażenia
+            if (this.target && this.target.takeDamage) {
+                this.target.takeDamage(this.attack);
+            }
+            
+            // Potem zabij siebie
+            this.hp = 0;
+            this.alive = false;
+            
+            // Dodaj efekt wizualny
+            if (this.element && this.element.parentNode) {
+                this.element.classList.add('exploding');
+                // Usuń element po krótkiej chwili
+                setTimeout(() => {
+                    this.destroy();
+                }, 200);
+            }
+            return;
+        }
+
         const currentTime = Date.now();
         const timeSinceLastAttack = currentTime - this.lastAttackTime;
         const attackInterval = 1000 / this.attackSpeed; // milliseconds between attacks
 
         if (timeSinceLastAttack >= attackInterval) {
-            // Bomb Skeleton - suicide attack
-            if (this.isSuicideBomber) {
-                this.target.takeDamage(this.attack);
-                // Zabij siebie bezpośrednio
-                this.hp = 0;
-                this.alive = false;
-                if (this.element) {
-                    this.element.classList.add('exploding');
-                }
-            } else if (this.isSpell) {
+            if (this.isSpell) {
                 // Fireball - zadaj obrażenia i znikn
                 this.target.takeDamage(this.attack);
                 this.alive = false; // Zniknn po trafieniu

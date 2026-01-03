@@ -21,34 +21,43 @@ class Tower {
             this.isDestroyed = true;
             this.onDestroy();
         }
-        this.showDamageNumber(damage);
+        // Tylko pokaż damage jeśli element istnieje i ma parentNode
+        if (this.element && this.element.parentNode) {
+            this.showDamageNumber(damage);
+        }
         this.updateVisual();
     }
 
     showDamageNumber(damage) {
-        if (!this.element) return;
-        
-        const damageText = document.createElement('div');
-        damageText.className = 'damage-number';
-        damageText.textContent = '-' + Math.floor(damage);
-        damageText.style.position = 'absolute';
-        damageText.style.left = (this.x + 20) + 'px';
-        damageText.style.top = (this.y - 20) + 'px';
-        damageText.style.fontSize = '24px';
-        damageText.style.fontWeight = 'bold';
-        damageText.style.color = '#FF0000';
-        damageText.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
-        damageText.style.zIndex = '100';
-        damageText.style.pointerEvents = 'none';
-        damageText.style.animation = 'damage-float 1s ease-out';
-        
-        this.element.parentNode.appendChild(damageText);
-        
-        setTimeout(() => {
-            if (damageText.parentNode) {
-                damageText.parentNode.removeChild(damageText);
-            }
-        }, 1000);
+        // Element i parentNode są już sprawdzone w takeDamage
+        try {
+            const parent = this.element.parentNode;
+            if (!parent) return;
+            
+            const damageText = document.createElement('div');
+            damageText.className = 'damage-number';
+            damageText.textContent = '-' + Math.floor(damage);
+            damageText.style.position = 'absolute';
+            damageText.style.left = (this.x + 20) + 'px';
+            damageText.style.top = (this.y - 20) + 'px';
+            damageText.style.fontSize = '24px';
+            damageText.style.fontWeight = 'bold';
+            damageText.style.color = '#FF0000';
+            damageText.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+            damageText.style.zIndex = '100';
+            damageText.style.pointerEvents = 'none';
+            damageText.style.animation = 'damage-float 1s ease-out';
+            
+            parent.appendChild(damageText);
+            
+            setTimeout(() => {
+                if (damageText.parentNode) {
+                    damageText.parentNode.removeChild(damageText);
+                }
+            }, 1000);
+        } catch (e) {
+            // Cicho ignoruj błędy
+        }
     }
 
     onDestroy() {
