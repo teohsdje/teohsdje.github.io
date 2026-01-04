@@ -14,14 +14,29 @@ class Tower {
         this.element = null;
     }
 
-    takeDamage(damage) {
+    takeDamage(damage, allTowers = []) {
+        // ABSOLUTNA OCHRONA - GŁÓWNA WIEŻA NIE MOŻE DOSTAĆ OBRAŻEŃ JEŚLI BOCZNE WIEŻE ŻYJĄ
+        if (this.type === 'main') {
+            const sideTowers = allTowers.filter(t => 
+                t.owner === this.owner && 
+                !t.isDestroyed && 
+                t.health > 0 &&
+                (t.type === 'left' || t.type === 'right')
+            );
+            
+            if (sideTowers.length > 0) {
+                return; // Główna wieża chroniona
+            }
+        }
+        
         this.health = Math.max(0, this.health - damage);
+        
         if (this.health <= 0) {
             this.health = 0;
             this.isDestroyed = true;
             this.onDestroy();
         }
-        // Tylko pokaż damage jeśli element istnieje i ma parentNode
+        
         if (this.element && this.element.parentNode) {
             this.showDamageNumber(damage);
         }
@@ -78,13 +93,13 @@ class Tower {
         return Math.max(0, Math.min(100, (this.health / this.maxHealth) * 100));
     }
 
-    update(deltaTime, units) {
+    update(deltaTime, units, towers = []) {
         if (this.isDestroyed) return;
 
         // Find and attack enemy units in range
         const target = this.findTarget(units);
         if (target) {
-            this.attack(target, deltaTime);
+            this.attack(target, deltaTime, towers);
         }
         
         // Zawsze aktualizuj wizualizację
@@ -116,14 +131,14 @@ class Tower {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    attack(target, deltaTime) {
+    attack(target, deltaTime, towers = []) {
         if (!this.isDestroyed) {
             const currentTime = Date.now();
             const timeSinceLastAttack = currentTime - this.lastAttackTime;
             const attackInterval = 1000 / this.attackSpeed;
 
             if (timeSinceLastAttack >= attackInterval) {
-                target.takeDamage(this.attackPower);
+                target.takeDamage(this.attackPower, towers);
                 this.lastAttackTime = currentTime;
                 
                 // Visual feedback

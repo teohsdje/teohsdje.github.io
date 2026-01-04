@@ -221,7 +221,7 @@ class Unit {
             
             // BOMB SKELETON - wybuchaj gdy dotrzesz blisko celu (dotykasz wieży)
             if (this.isSuicideBomber && !this.hasExploded && distance <= 50) {
-                this.performAttack(deltaTime);
+                this.performAttack(deltaTime, towers);
                 return; // Koniec aktualizacji po wybuchu
             }
             
@@ -233,7 +233,7 @@ class Unit {
             
             if (distance <= attackRange) {
                 // In range - attack
-                this.performAttack(deltaTime);
+                this.performAttack(deltaTime, towers);
                 // Jeśli bomb skeleton wybuchł, nie aktualizuj visual (jest już martwy)
                 if (this.isSuicideBomber && this.hasExploded) {
                     return;
@@ -256,25 +256,35 @@ class Unit {
     findTargetTower(towers) {
         // Fireball - najpierw wieże pomocnicze, potem główna
         const enemyOwner = this.owner === 'player' ? 'opponent' : 'player';
-        const enemyTowers = towers.filter(t => t.owner === enemyOwner && !t.isDestroyed);
         
-        if (enemyTowers.length > 0) {
-            // Najpierw spróbuj znaleźć wieże pomocnicze (left lub right)
-            const sideTowers = enemyTowers.filter(t => t.type === 'left' || t.type === 'right');
-            
-            if (sideTowers.length > 0) {
-                // Wybierz losową wieżę pomocniczą
-                const randomTower = sideTowers[Math.floor(Math.random() * sideTowers.length)];
-                this.target = randomTower;
-            } else {
-                // Jeśli nie ma wież pomocniczych, atakuj główną
-                const mainTower = enemyTowers.find(t => t.type === 'main');
-                this.target = mainTower || null;
-            }
+        // Sprawdź czy są boczne wieże
+        const sideTowers = towers.filter(t => 
+            t.owner === enemyOwner && 
+            !t.isDestroyed && 
+            t.health > 0 &&
+            (t.type === 'left' || t.type === 'right')
+        );
+        
+        if (sideTowers.length > 0) {
+            // Jeśli są boczne wieże, TYLKO one mogą być celem
+            const randomTower = sideTowers[Math.floor(Math.random() * sideTowers.length)];
+            this.target = randomTower;
         } else {
-            // Jeśli wszystkie wieże zniszczone, zginąć
-            this.alive = false;
-            this.target = null;
+            // TYLKO jeśli NIE MA bocznych wież, atakuj główną
+            const mainTower = towers.find(t => 
+                t.owner === enemyOwner && 
+                !t.isDestroyed && 
+                t.health > 0 &&
+                t.type === 'main'
+            );
+            
+            if (mainTower) {
+                this.target = mainTower;
+            } else {
+                // Jeśli wszystkie wieże zniszczone, zginąć
+                this.alive = false;
+                this.target = null;
+            }
         }
     }
 
@@ -286,52 +296,37 @@ class Unit {
 
         // Giant and Bomb Skeleton target only towers
         if (this.targetsTowersOnly) {
-            if (this.isSuicideBomber) {
-                console.log('BOMB SKELETON szuka celu. Wież:', towers.length);
-            }
-            
-            // Najpierw szukaj wież pomocniczych (left i right)
+            // Najpierw sprawdź czy są boczne wieże wroga
             const sideTowers = towers.filter(t => 
                 t.owner === enemyOwner && 
                 !t.isDestroyed && 
+                t.health > 0 &&
                 (t.type === 'left' || t.type === 'right')
             );
             
             if (sideTowers.length > 0) {
-                // Atakuj najbliższą wieżę pomocniczą
+                // Jeśli są boczne wieże, TYLKO one mogą być celem
                 sideTowers.forEach(tower => {
                     const distance = this.getDistance(tower);
-                    if (this.isSuicideBomber) {
-                        console.log('  Wieża pomocnicza:', tower.type, 'odległość:', distance);
-                    }
                     if (distance < closestDistance) {
                         closestDistance = distance;
                         this.target = tower;
                     }
                 });
             } else {
-                // Jeśli nie ma wież pomocniczych, atakuj główną
-                const mainTowers = towers.filter(t => 
+                // TYLKO jeśli NIE MA bocznych wież, atakuj główną
+                const mainTower = towers.find(t => 
                     t.owner === enemyOwner && 
                     !t.isDestroyed && 
+                    t.health > 0 &&
                     t.type === 'main'
                 );
                 
-                mainTowers.forEach(tower => {
-                    const distance = this.getDistance(tower);
-                    if (this.isSuicideBomber) {
-                        console.log('  Wieża główna:', tower.type, 'odległość:', distance);
-                    }
-                    if (distance < closestDistance) {
-                        closestDistance = distance;
-                        this.target = tower;
-                    }
-                });
+                if (mainTower) {
+                    this.target = mainTower;
+                }
             }
             
-            if (this.isSuicideBomber) {
-                console.log('BOMB SKELETON znalazł cel:', this.target);
-            }
             return;
         }
 
@@ -360,15 +355,17 @@ class Unit {
         if (!this.target || closestDistance > 200) {
             closestDistance = Infinity;
             
-            // Najpierw szukaj wież pomocniczych
-            const sideTowers = towers.filter(t => 
+            // Najpierw sprawdź czy są boczne wieże wroga
+            const enemySideTowers = towers.filter(t => 
                 t.owner === enemyOwner && 
                 !t.isDestroyed && 
+                t.health > 0 &&
                 (t.type === 'left' || t.type === 'right')
             );
             
-            if (sideTowers.length > 0) {
-                sideTowers.forEach(tower => {
+            if (enemySideTowers.length > 0) {
+                // Jeśli są boczne wieże, TYLKO one są dostępne do ataku
+                enemySideTowers.forEach(tower => {
                     const distance = this.getDistance(tower);
                     if (distance < closestDistance) {
                         closestDistance = distance;
@@ -376,16 +373,16 @@ class Unit {
                     }
                 });
             } else {
-                // Jeśli nie ma wież pomocniczych, atakuj główną
-                towers.forEach(tower => {
-                    if (tower.owner === enemyOwner && !tower.isDestroyed && tower.type === 'main') {
-                        const distance = this.getDistance(tower);
-                        if (distance < closestDistance) {
-                            closestDistance = distance;
-                            this.target = tower;
-                        }
-                    }
-                });
+                // TYLKO jeśli NIE MA żadnych bocznych wież, atakuj główną
+                const mainTower = towers.find(t => 
+                    t.owner === enemyOwner && 
+                    !t.isDestroyed && 
+                    t.health > 0 &&
+                    t.type === 'main'
+                );
+                if (mainTower) {
+                    this.target = mainTower;
+                }
             }
         }
     }
@@ -418,15 +415,14 @@ class Unit {
         this.y += direction * this.speed * (deltaTime / 1000);
     }
 
-    performAttack(deltaTime) {
+    performAttack(deltaTime, towers = []) {
         // Bomb Skeleton - natychmiastowy atak samobójczy (tylko raz)
         if (this.isSuicideBomber && !this.hasExploded) {
-            console.log('💥 BOMB SKELETON WYBUCHŁ!', this.target);
             this.hasExploded = true;
             
             // Najpierw zadaj obrażenia
             if (this.target && this.target.takeDamage) {
-                this.target.takeDamage(this.attack);
+                this.target.takeDamage(this.attack, towers);
             }
             
             // Potem zabij siebie
@@ -451,7 +447,7 @@ class Unit {
         if (timeSinceLastAttack >= attackInterval) {
             if (this.isSpell) {
                 // Fireball - zadaj obrażenia i znikn
-                this.target.takeDamage(this.attack);
+                this.target.takeDamage(this.attack, towers);
                 this.alive = false; // Zniknn po trafieniu
                 if (this.element) {
                     this.element.classList.add('spell-hit');
@@ -461,7 +457,7 @@ class Unit {
                 }
             } else {
                 // Normal attack
-                this.target.takeDamage(this.attack);
+                this.target.takeDamage(this.attack, towers);
             }
             
             this.lastAttackTime = currentTime;

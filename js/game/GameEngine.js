@@ -10,11 +10,15 @@ class GameEngine {
         this.maxGameTime = 120000; // 2 minutes in milliseconds
         this.gameContainer = null;
         this.elixirBarElement = null;
+        this.gameEnded = false; // Flaga zapobiegająca wielokrotnym wywołaniom endGame()
     }
 
     init(gameContainer, elixirBarElement) {
         this.gameContainer = gameContainer;
         this.elixirBarElement = elixirBarElement;
+        
+        // Reset flagi końca gry
+        this.gameEnded = false;
         
         // Wyczyść battlefield przed utworzeniem nowych wież
         if (this.gameContainer) {
@@ -126,7 +130,20 @@ class GameEngine {
 
         // Check if game time is over
         if (this.gameTime >= this.maxGameTime) {
-            this.endGame('draw');
+            const playerMainTower = this.towers.find(t => t.owner === 'player' && t.type === 'main');
+            const opponentMainTower = this.towers.find(t => t.owner === 'opponent' && t.type === 'main');
+            
+            if (playerMainTower && opponentMainTower) {
+                if (playerMainTower.health > opponentMainTower.health) {
+                    this.endGame('win');
+                } else if (opponentMainTower.health > playerMainTower.health) {
+                    this.endGame('lose');
+                } else {
+                    this.endGame('draw');
+                }
+            } else {
+                this.endGame('draw');
+            }
             return;
         }
 
@@ -156,7 +173,7 @@ class GameEngine {
 
         // Update towers
         this.towers.forEach(tower => {
-            tower.update(deltaTime, this.units);
+            tower.update(deltaTime, this.units, this.towers);
         });
 
         // Check win/lose conditions
@@ -288,28 +305,28 @@ class GameEngine {
     checkGameEnd() {
         // Check if player's main tower is destroyed
         const playerMainTower = this.towers.find(t => t.owner === 'player' && t.type === 'main');
-        if (playerMainTower) {
-            console.log('Player main tower health:', playerMainTower.health, 'type:', playerMainTower.type);
-            if (playerMainTower.type === 'main' && playerMainTower.health <= 0) {
-                console.log('GAME OVER - Player lost!');
-                this.endGame('lose');
-                return;
-            }
+        if (!playerMainTower) return;
+        
+        if (playerMainTower.health <= 0) {
+            this.endGame('lose');
+            return;
         }
 
         // Check if opponent's main tower is destroyed
         const opponentMainTower = this.towers.find(t => t.owner === 'opponent' && t.type === 'main');
-        if (opponentMainTower) {
-            console.log('Opponent main tower health:', opponentMainTower.health, 'type:', opponentMainTower.type);
-            if (opponentMainTower.type === 'main' && opponentMainTower.health <= 0) {
-                console.log('GAME OVER - Player won!');
-                this.endGame('win');
-                return;
-            }
+        if (!opponentMainTower) return;
+        
+        if (opponentMainTower.health <= 0) {
+            this.endGame('win');
+            return;
         }
     }
 
     endGame(result) {
+        // Zabezpieczenie przed wielokrotnym wywołaniem
+        if (this.gameEnded) return;
+        this.gameEnded = true;
+        
         this.isRunning = false;
 
         // Usuń wszystkie jednostki z planszy
