@@ -11,6 +11,9 @@ class ShopManager {
         // Flaga zapobiegająca wielokrotnemu wywołaniu
         this.isProcessingPromo = false;
         
+        // Interval do aktualizowania statusu premium
+        this.premiumUpdateInterval = null;
+        
         this.items = [
             // Monety (kupowane za PLN)
             { id: 'coins50', name: '50 Monet', icon: '💰', price: 0.50, type: 'coins', amount: 50, currency: 'pln' },
@@ -26,19 +29,22 @@ class ShopManager {
             { id: 'gems250', name: '250 Szmaragdów', icon: '💎💎', price: 20.00, type: 'gems', amount: 250, currency: 'pln' },
             { id: 'gems500', name: '500 Szmaragdów', icon: '💎💎💎', price: 38.00, type: 'gems', amount: 500, currency: 'pln' },
             
-            // Skrzynki (kupowane za PLN)
-            { id: 'common_chest', name: 'Zwykła Skrzynka', icon: '📦', price: 0.50, type: 'chest', rarity: 'common', currency: 'pln' },
-            { id: 'silver_chest', name: 'Srebrna Skrzynka', icon: '🪙', price: 1.50, type: 'chest', rarity: 'silver', currency: 'pln' },
-            { id: 'gold_chest', name: 'Złota Skrzynka', icon: '🏆', price: 3.50, type: 'chest', rarity: 'gold', currency: 'pln' },
-            { id: 'platinum_chest', name: 'Platynowa Skrzynka', icon: '👑', price: 8.00, type: 'chest', rarity: 'platinum', currency: 'pln' },
-            { id: 'ruby_chest', name: 'Rubinowa Skrzynka', icon: '💍', price: 15.00, type: 'chest', rarity: 'ruby', currency: 'pln' },
-            
-            // Premium skrzynki (kupowane za PLN)
-            { id: 'mega_chest', name: 'Mega Skrzynka', icon: '🎁', price: 5.00, type: 'chest', rarity: 'platinum', currency: 'pln' },
-            { id: 'legend_chest', name: 'Legendarna Skrzynka', icon: '✨', price: 10.00, type: 'chest', rarity: 'ruby', currency: 'pln' },
+            // Skrzynki (kupowane za PLN) - posortowane od najgorszej do najlepszej
+            { id: 'common_chest', name: 'Zwykła Skrzynka', icon: '📦', price: 1.00, type: 'chest', rarity: 'common', currency: 'pln' },
+            { id: 'silver_chest', name: 'Srebrna Skrzynka', icon: '🔩', price: 2.00, type: 'chest', rarity: 'silver', currency: 'pln' },
+            { id: 'gold_chest', name: 'Złota Skrzynka', icon: '🏆', price: 4.00, type: 'chest', rarity: 'gold', currency: 'pln' },
+            { id: 'platinum_chest', name: 'Platynowa Skrzynka', icon: '👑', price: 7.00, type: 'chest', rarity: 'platinum', currency: 'pln' },
+            { id: 'ruby_chest', name: 'Rubinowa Skrzynka', icon: '💍', price: 12.00, type: 'chest', rarity: 'ruby', currency: 'pln' },
             
             // Boostery (kupowane za szmaragdy)
-            { id: 'elixir_boost', name: 'Booster Eliksiru x2', icon: '⚡', price: 300, type: 'elixir_boost', duration: 600, currency: 'gems' }
+            { id: 'elixir_boost', name: 'Booster Eliksiru x2', icon: '⚡', price: 300, type: 'elixir_boost', duration: 600, currency: 'gems' },
+            { id: 'tower_defense_boost', name: 'Booster Obrony Wież', icon: '🛡️', price: 350, type: 'tower_defense_boost', duration: 600, currency: 'gems' },
+            { id: 'trophy_boost', name: 'Booster Trofeów x2', icon: '🏆', price: 500, type: 'trophy_boost', duration: 1800, currency: 'gems' },
+            { id: 'reward_boost', name: 'Booster Nagród x2', icon: '💰', price: 400, type: 'reward_boost', duration: 3600, currency: 'gems' },
+            { id: 'mega_boost', name: 'MEGA Booster 🔥', icon: '🚀', price: 1000, type: 'mega_boost', duration: 900, currency: 'gems' },
+            
+            // Premium (kupowane za PLN)
+            { id: 'premium_24h', name: '💎 KONTO PREMIUM 💎', icon: '💎', price: 30.00, type: 'premium', duration: 86400, currency: 'pln' }
         ];
         this.setupEventListeners();
     }
@@ -71,8 +77,80 @@ class ShopManager {
         });
     }
 
+    renderPremiumStatus() {
+        const premiumContainer = document.getElementById('premium-status');
+        if (!premiumContainer) return;
+
+        const premiumEnd = parseInt(localStorage.getItem('premiumEnd') || 0);
+        const isPremiumActive = premiumEnd > Date.now();
+
+        if (isPremiumActive) {
+            const timeRemaining = premiumEnd - Date.now();
+            const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+            const totalHours = 24;
+            const percentage = Math.max(0, Math.min(100, (timeRemaining / (86400 * 1000)) * 100));
+
+            premiumContainer.innerHTML = `
+                <div class="premium-active">
+                    <div class="premium-header">
+                        <span class="premium-icon">💎</span>
+                        <span class="premium-title">KONTO PREMIUM AKTYWNE</span>
+                        <span class="premium-icon">💎</span>
+                    </div>
+                    <div class="premium-timer">
+                        <div class="timer-text">Pozostało: ${hours}h ${minutes}m</div>
+                        <div class="timer-bar-bg">
+                            <div class="timer-bar" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                    <div class="premium-benefits">
+                        <div class="benefit">⚡ Mega Booster</div>
+                        <div class="benefit">💰 Nagrody x3</div>
+                        <div class="benefit">🎁 Lepsze Skrzynki</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            const premiumItem = this.items.find(item => item.type === 'premium');
+            if (premiumItem) {
+                premiumContainer.innerHTML = `
+                    <div class="premium-offer">
+                        <div class="offer-header">
+                            <span class="offer-icon">💎</span>
+                            <span class="offer-title">KONTO PREMIUM</span>
+                        </div>
+                        <div class="offer-benefits">
+                            <div class="benefit">⚡ Mega Booster (24h)</div>
+                            <div class="benefit">💰 Nagrody x3</div>
+                            <div class="benefit">🎁 Lepsze Skrzynki</div>
+                        </div>
+                        <button class="buy-premium-btn" data-item-id="${premiumItem.id}">
+                            Kup za ${premiumItem.price.toFixed(2)} PLN
+                        </button>
+                    </div>
+                `;
+                
+                const buyBtn = premiumContainer.querySelector('.buy-premium-btn');
+                if (buyBtn) {
+                    buyBtn.addEventListener('click', () => this.purchaseItem(premiumItem.id));
+                }
+            }
+        }
+    }
+
     render() {
         this.updateWalletDisplay();
+        this.renderPremiumStatus();
+        
+        // Rozpocznij aktualizację statusu premium co sekundę
+        if (this.premiumUpdateInterval) {
+            clearInterval(this.premiumUpdateInterval);
+        }
+        this.premiumUpdateInterval = setInterval(() => {
+            this.renderPremiumStatus();
+        }, 1000);
+        
         this.renderShopItems();
     }
 
@@ -125,7 +203,13 @@ class ShopManager {
         const boosterSection = document.createElement('div');
         boosterSection.className = 'shop-section';
         boosterSection.innerHTML = '<h3>⚡ Boostery ⚡</h3>';
-        const boosterItems = this.items.filter(item => item.type === 'elixir_boost');
+        const boosterItems = this.items.filter(item => 
+            item.type === 'elixir_boost' || 
+            item.type === 'tower_defense_boost' ||
+            item.type === 'trophy_boost' || 
+            item.type === 'reward_boost' ||
+            item.type === 'mega_boost'
+        );
         if (boosterItems.length > 0) {
             boosterItems.forEach(item => {
                 const itemEl = this.createItemElement(item);
@@ -161,6 +245,15 @@ class ShopManager {
                 ${item.type === 'chest' ? `<p>Rarietas: ${this.getRarityLabel(item.rarity)}</p>` : ''}
                 ${item.type === 'elixir_boost' ? `<p>Czas trwania: ${item.duration / 60} minut</p>` : ''}
                 ${item.type === 'elixir_boost' ? `<p>Eliksir x2 podczas gry!</p>` : ''}
+                ${item.type === 'tower_defense_boost' ? `<p>Czas trwania: ${item.duration / 60} minut</p>` : ''}
+                ${item.type === 'tower_defense_boost' ? `<p>Wieże +50% HP!</p>` : ''}
+                ${item.type === 'trophy_boost' ? `<p>Czas trwania: ${item.duration / 60} minut</p>` : ''}
+                ${item.type === 'trophy_boost' ? `<p>+60 trofeów za wygraną!</p>` : ''}
+                ${item.type === 'reward_boost' ? `<p>Czas trwania: ${item.duration / 60} minut</p>` : ''}
+                ${item.type === 'mega_boost' ? `<p>Czas trwania: ${item.duration / 60} minut</p>` : ''}
+                ${item.type === 'mega_boost' ? `<p><strong>WSZYSTKIE BOOSTERY!</strong></p>` : ''}
+                ${item.type === 'mega_boost' ? `<p>Eliksir x2 + Obrona +50% + Trofea x2 + Nagrody x2</p>` : ''}
+                ${item.type === 'reward_boost' ? `<p>Podwojone nagrody z walk!</p>` : ''}
                 <div class="item-price">
                     ${priceDisplay}
                 </div>
@@ -229,7 +322,32 @@ class ShopManager {
         } else if (item.type === 'elixir_boost') {
             const boostEndTime = Date.now() + (item.duration * 1000);
             localStorage.setItem('elixirBoostEnd', boostEndTime);
-            alert(`✓ Aktywowano Booster Eliksiru x2 na ${item.duration / 60} minut!\nEliksir będzie regenerować się 2 razy szybciej podczas walki!`);
+            alert(`✓ Aktywowano Booster Eliksiru x2 na ${item.duration / 60} minut!\nEliksir będzie regenerować się 2 razy szybciej podczas walki!`);        } else if (item.type === 'tower_defense_boost') {
+            const boostEndTime = Date.now() + (item.duration * 1000);
+            localStorage.setItem('towerDefenseBoostEnd', boostEndTime);
+            alert(`✓ Aktywowano Booster Obrony Wież na ${item.duration / 60} minut!\nTwoje wieże będą miały +50% HP!`);        } else if (item.type === 'tower_defense_boost') {
+            const boostEndTime = Date.now() + (item.duration * 1000);
+            localStorage.setItem('towerDefenseBoostEnd', boostEndTime);
+            alert(`✓ Aktywowano Booster Obrony Wież na ${item.duration / 60} minut!\nTwoje wieże będą miały +50% HP!`);
+        } else if (item.type === 'trophy_boost') {
+            const boostEndTime = Date.now() + (item.duration * 1000);
+            localStorage.setItem('trophyBoostEnd', boostEndTime);
+            alert(`✓ Aktywowano Booster Trofeów x2 na ${item.duration / 60} minut!\nOtrzymasz +60 trofeów za wygraną zamiast +30!`);
+        } else if (item.type === 'mega_boost') {
+            const boostEndTime = Date.now() + (item.duration * 1000);
+            localStorage.setItem('elixirBoostEnd', boostEndTime);
+            localStorage.setItem('towerDefenseBoostEnd', boostEndTime);
+            localStorage.setItem('trophyBoostEnd', boostEndTime);
+            localStorage.setItem('rewardBoostEnd', boostEndTime);
+            alert(`✓ Aktywowano MEGA BOOSTER na ${item.duration / 60} minut! 🚀\n\n⚡ Eliksir x2\n🛡️ Obrona Wież +50%\n🏆 Trofea x2 (+60 za wygraną)\n💰 Nagrody x2\n\nWszystkie boostery aktywne jednocześnie!`);
+        } else if (item.type === 'reward_boost') {
+            const boostEndTime = Date.now() + (item.duration * 1000);
+            localStorage.setItem('rewardBoostEnd', boostEndTime);
+            alert(`✓ Aktywowano Booster Nagród x2 na ${item.duration / 60} minut!\nSkrzynki i nagrody będą 2x lepsze!`);
+        } else if (item.type === 'premium') {
+            const premiumEndTime = Date.now() + (item.duration * 1000);
+            localStorage.setItem('premiumEnd', premiumEndTime);
+            alert(`✓ KONTO PREMIUM AKTYWOWANE! 💎\n\nCzas trwania: 24 godziny\n\nBonusy:\n⚡ Mega Booster (wszystkie boostery)\n💰 Nagrody x3\n🎁 Lepsze skrzynki\n\nCiesz się statusem Premium!`);
         }
 
         // Zapisz stan gry po zakupie

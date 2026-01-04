@@ -73,6 +73,52 @@
     position: relative;
 }
 
+#premium-indicator {
+    position: absolute;
+    top: -36px;
+    left: 10px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    border: 2px solid #FFD700;
+    border-radius: 8px;
+    padding: 4px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: premium-pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    z-index: 150;
+}
+
+#premium-icon {
+    font-size: 16px;
+    animation: rotate-icon 3s linear infinite;
+}
+
+#premium-label {
+    color: #000;
+    font-weight: bold;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+#premium-time {
+    color: #000;
+    font-weight: bold;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+@keyframes premium-pulse {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
+    }
+}
+
 #boost-indicator {
     position: absolute;
     top: -36px;
@@ -89,12 +135,60 @@
     z-index: 100;
 }
 
-#boost-icon {
+#tower-defense-indicator {
+    position: absolute;
+    top: -36px;
+    left: 120px;
+    background: linear-gradient(135deg, #4169E1 0%, #1E90FF 100%);
+    border: 2px solid #4169E1;
+    border-radius: 8px;
+    padding: 4px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: pulse-glow-blue 1.5s ease-in-out infinite;
+    box-shadow: 0 0 15px rgba(65, 105, 225, 0.6);
+    z-index: 100;
+}
+
+#trophy-boost-indicator {
+    position: absolute;
+    top: -36px;
+    right: 120px;
+    background: linear-gradient(135deg, #FF8C00 0%, #FF6347 100%);
+    border: 2px solid #FF8C00;
+    border-radius: 8px;
+    padding: 4px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: pulse-glow-orange 1.5s ease-in-out infinite;
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.6);
+    z-index: 100;
+}
+
+#reward-boost-indicator {
+    position: absolute;
+    top: -36px;
+    right: 10px;
+    background: linear-gradient(135deg, #32CD32 0%, #00FF00 100%);
+    border: 2px solid #32CD32;
+    border-radius: 8px;
+    padding: 4px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: pulse-glow-green 1.5s ease-in-out infinite;
+    box-shadow: 0 0 15px rgba(50, 205, 50, 0.6);
+    z-index: 100;
+}
+
+#boost-icon, #tower-defense-icon, #trophy-boost-icon, #reward-boost-icon {
     font-size: 16px;
     animation: rotate-icon 2s linear infinite;
 }
 
-#boost-time {
+#boost-time, #tower-defense-time, #trophy-boost-time, #reward-boost-time {
     color: #000;
     font-weight: bold;
     font-size: 13px;
@@ -106,6 +200,33 @@
     }
     50% {
         box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
+    }
+}
+
+@keyframes pulse-glow-blue {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(65, 105, 225, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(65, 105, 225, 0.9);
+    }
+}
+
+@keyframes pulse-glow-orange {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(255, 140, 0, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(255, 140, 0, 0.9);
+    }
+}
+
+@keyframes pulse-glow-green {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(50, 205, 50, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(50, 205, 50, 0.9);
     }
 }
 

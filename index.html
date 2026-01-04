@@ -73,9 +73,30 @@
             </div>
 
             <div id="game-controls">
+                <div id="premium-indicator" style="display: none;">
+                    <span id="premium-icon">💎</span>
+                    <span id="premium-label">PREMIUM</span>
+                    <span id="premium-time">0:00</span>
+                </div>
+                
                 <div id="boost-indicator" style="display: none;">
                     <span id="boost-icon">⚡</span>
                     <span id="boost-time">0:00</span>
+                </div>
+                
+                <div id="tower-defense-indicator" style="display: none;">
+                    <span id="tower-defense-icon">🛡️</span>
+                    <span id="tower-defense-time">0:00</span>
+                </div>
+                
+                <div id="trophy-boost-indicator" style="display: none;">
+                    <span id="trophy-boost-icon">🏆</span>
+                    <span id="trophy-boost-time">0:00</span>
+                </div>
+                
+                <div id="reward-boost-indicator" style="display: none;">
+                    <span id="reward-boost-icon">💰</span>
+                    <span id="reward-boost-time">0:00</span>
                 </div>
                 
                 <div id="elixir-container">
@@ -154,6 +175,9 @@
                     <input type="text" id="promo-input" placeholder="Wpisz kod promocyjny...">
                     <button id="promo-button">✓ Użyj kodu</button>
                 </div>
+                
+                <div id="premium-status"></div>
+                
                 <div id="shop-items" class="shop-items"></div>
             </div>
         </div>

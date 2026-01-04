@@ -39,6 +39,13 @@ class GameEngine {
         const league = this.getLeagueByTrophies(playerTrophies);
         const towerHpBonus = league.index * 500;
 
+        // Sprawdź czy aktywny tower defense boost lub premium
+        const premiumEnd = parseInt(localStorage.getItem('premiumEnd') || 0);
+        const isPremiumActive = premiumEnd > Date.now();
+        const towerDefenseBoostEnd = parseInt(localStorage.getItem('towerDefenseBoostEnd') || 0);
+        const isTowerDefenseActive = towerDefenseBoostEnd > Date.now();
+        const defenseMultiplier = (isTowerDefenseActive || isPremiumActive) ? 1.5 : 1.0;
+
         // Szerokość areny
         const arenaWidth = 360;
         const leftX = 50;
@@ -49,12 +56,12 @@ class GameEngine {
         const playerY = 400; // Gracz na dole (zmniejszone żeby panel nie zasłaniał)
         const botY = 50;     // Bot na górze
 
-        // Player towers (gracz - dół)
-        this.towers.push(new Tower('player', 'left', 500 + towerHpBonus, 10, leftX, playerY, 120));
-        this.towers.push(new Tower('player', 'main', 1000 + towerHpBonus, 10, centerX, playerY, 120));
-        this.towers.push(new Tower('player', 'right', 500 + towerHpBonus, 10, rightX, playerY, 120));
+        // Player towers (gracz - dół) - z bonusem obrony
+        this.towers.push(new Tower('player', 'left', Math.floor((500 + towerHpBonus) * defenseMultiplier), 10, leftX, playerY, 120));
+        this.towers.push(new Tower('player', 'main', Math.floor((1000 + towerHpBonus) * defenseMultiplier), 10, centerX, playerY, 120));
+        this.towers.push(new Tower('player', 'right', Math.floor((500 + towerHpBonus) * defenseMultiplier), 10, rightX, playerY, 120));
 
-        // Opponent towers (bot - góra)
+        // Opponent towers (bot - góra) - bez bonusu
         this.towers.push(new Tower('opponent', 'left', 500 + towerHpBonus, 10, leftX, botY, 120));
         this.towers.push(new Tower('opponent', 'main', 1000 + towerHpBonus, 10, centerX, botY, 120));
         this.towers.push(new Tower('opponent', 'right', 500 + towerHpBonus, 10, rightX, botY, 120));
@@ -184,12 +191,14 @@ class GameEngine {
     }
 
     updateElixir(deltaTime) {
-        // Sprawdź czy booster eliksiru jest aktywny
+        // Sprawdź czy booster eliksiru lub premium jest aktywny
+        const premiumEnd = parseInt(localStorage.getItem('premiumEnd') || 0);
+        const isPremiumActive = premiumEnd > Date.now();
         const boostEndTime = parseInt(localStorage.getItem('elixirBoostEnd') || 0);
         const isBoostActive = boostEndTime > Date.now();
-        
-        // Regeneracja eliksiru - 1 na sekundę (2 jeśli booster aktywny)
-        const regenRate = isBoostActive ? 2 : 1;
+
+        // Regeneracja eliksiru - 1 na sekundę (2 jeśli booster lub premium aktywny)
+        const regenRate = (isBoostActive || isPremiumActive) ? 2 : 1;
         this.playerElixir += (deltaTime / 1000) * regenRate;
         if (this.playerElixir > 10) this.playerElixir = 10;
         
@@ -206,22 +215,62 @@ class GameEngine {
             this.elixirBarElement.style.width = elixirPercent + '%';
         }
 
-        // Update boost indicator
-        const boostEndTime = parseInt(localStorage.getItem('elixirBoostEnd') || 0);
-        const isBoostActive = boostEndTime > Date.now();
-        const boostIndicator = document.getElementById('boost-indicator');
-        const boostTime = document.getElementById('boost-time');
-        
-        if (boostIndicator && boostTime) {
-            if (isBoostActive) {
-                const timeRemaining = Math.ceil((boostEndTime - Date.now()) / 1000);
-                const minutes = Math.floor(timeRemaining / 60);
-                const seconds = timeRemaining % 60;
-                boostTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                boostIndicator.style.display = 'flex';
-            } else {
-                boostIndicator.style.display = 'none';
+        // Sprawdź premium status
+        const premiumEnd = parseInt(localStorage.getItem('premiumEnd') || 0);
+        const isPremiumActive = premiumEnd > Date.now();
+        const premiumIndicator = document.getElementById('premium-indicator');
+        const premiumTime = document.getElementById('premium-time');
+
+        if (isPremiumActive && premiumIndicator && premiumTime) {
+            // Pokaż tylko wskaźnik premium
+            const timeRemaining = Math.ceil((premiumEnd - Date.now()) / 1000);
+            const hours = Math.floor(timeRemaining / 3600);
+            const minutes = Math.floor((timeRemaining % 3600) / 60);
+            premiumTime.textContent = `${hours}h ${minutes}m`;
+            premiumIndicator.style.display = 'flex';
+            
+            // Ukryj wszystkie inne wskaźniki
+            const otherIndicators = ['boost-indicator', 'tower-defense-indicator', 'trophy-boost-indicator', 'reward-boost-indicator'];
+            otherIndicators.forEach(id => {
+                const indicator = document.getElementById(id);
+                if (indicator) indicator.style.display = 'none';
+            });
+        } else {
+            // Ukryj wskaźnik premium
+            if (premiumIndicator) premiumIndicator.style.display = 'none';
+            if (premiumEnd > 0 && !isPremiumActive) {
+                localStorage.removeItem('premiumEnd');
             }
+            
+            // Pokaż normalne wskaźniki boosterów
+            const boostTypes = [
+                { key: 'elixirBoostEnd', indicatorId: 'boost-indicator', timeId: 'boost-time' },
+                { key: 'towerDefenseBoostEnd', indicatorId: 'tower-defense-indicator', timeId: 'tower-defense-time' },
+                { key: 'trophyBoostEnd', indicatorId: 'trophy-boost-indicator', timeId: 'trophy-boost-time' },
+                { key: 'rewardBoostEnd', indicatorId: 'reward-boost-indicator', timeId: 'reward-boost-time' }
+            ];
+
+            boostTypes.forEach(boost => {
+                const boostEndTime = parseInt(localStorage.getItem(boost.key) || 0);
+                const isBoostActive = boostEndTime > Date.now();
+                const boostIndicator = document.getElementById(boost.indicatorId);
+                const boostTime = document.getElementById(boost.timeId);
+                
+                if (boostIndicator && boostTime) {
+                    if (isBoostActive) {
+                        const timeRemaining = Math.ceil((boostEndTime - Date.now()) / 1000);
+                        const minutes = Math.floor(timeRemaining / 60);
+                        const seconds = timeRemaining % 60;
+                        boostTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                        boostIndicator.style.display = 'flex';
+                    } else {
+                        boostIndicator.style.display = 'none';
+                        if (boostEndTime > 0) {
+                            localStorage.removeItem(boost.key);
+                        }
+                    }
+                }
+            });
         }
 
         // Update time
@@ -340,19 +389,45 @@ class GameEngine {
         // Update trophies
         let trophies = parseInt(localStorage.getItem('trophies')) || 0;
         let message = '';
+        
+        // Sprawdź boostery i premium
+        const premiumEnd = parseInt(localStorage.getItem('premiumEnd') || 0);
+        const isPremiumActive = premiumEnd > Date.now();
+        const trophyBoostEnd = parseInt(localStorage.getItem('trophyBoostEnd') || 0);
+        const rewardBoostEnd = parseInt(localStorage.getItem('rewardBoostEnd') || 0);
+        const isTrophyBoostActive = trophyBoostEnd > Date.now();
+        const isRewardBoostActive = rewardBoostEnd > Date.now();
 
         if (result === 'win') {
-            trophies += 30;
-            message = 'Zwycięstwo! +30 pucharów';
-            // 50% chance for chest
-            if (Math.random() < 0.5) {
-                this.giveChestSilently();
+            const trophyGain = (isTrophyBoostActive || isPremiumActive) ? 60 : 30;
+            trophies += trophyGain;
+            message = `Zwycięstwo! +${trophyGain} pucharów`;
+            if (isTrophyBoostActive || isPremiumActive) {
+                message += ' 🏆⚡';
+            }
+            
+            // Szansa na skrzynkę (zwiększona jeśli aktywny booster nagród lub premium)
+            // Premium daje 90% szans na skrzynkę (3x nagrody)
+            let chestChance = 0.5;
+            if (isPremiumActive) chestChance = 0.9;
+            else if (isRewardBoostActive) chestChance = 0.75;
+            
+            if (Math.random() < chestChance) {
+                this.giveChestSilently(isPremiumActive || isRewardBoostActive);
             }
         } else if (result === 'lose') {
             trophies -= 10;
             message = 'Przegrana! -10 pucharów';
         } else {
             message = 'Remis!';
+        }
+        
+        // Usuń wygasłe boostery
+        if (trophyBoostEnd > 0 && !isTrophyBoostActive) {
+            localStorage.removeItem('trophyBoostEnd');
+        }
+        if (rewardBoostEnd > 0 && !isRewardBoostActive) {
+            localStorage.removeItem('rewardBoostEnd');
         }
 
         if (trophies < 0) trophies = 0;
@@ -410,27 +485,49 @@ class GameEngine {
         }, 3000);
     }
 
-    giveChestSilently() {
+    giveChestSilently(rewardBoostActive = false) {
         // Szanse: 50% common, 30% silver, 10% gold, 9% platinum, 1% ruby
-        const rand = Math.random() * 100;
+        // Jeśli booster aktywny - lepsze szanse
+        let rand = Math.random() * 100;
         let chestType;
         let chestName;
 
-        if (rand < 50) {
-            chestType = 'common';
-            chestName = 'Zwykła Skrzynka';
-        } else if (rand < 80) {
-            chestType = 'silver';
-            chestName = 'Srebrna Skrzynka';
-        } else if (rand < 90) {
-            chestType = 'gold';
-            chestName = 'Złota Skrzynka';
-        } else if (rand < 99) {
-            chestType = 'platinum';
-            chestName = 'Platynowa Skrzynka';
+        if (rewardBoostActive) {
+            // Lepsze szanse z boosterem
+            if (rand < 30) {
+                chestType = 'common';
+                chestName = 'Zwykła Skrzynka';
+            } else if (rand < 55) {
+                chestType = 'silver';
+                chestName = 'Srebrna Skrzynka';
+            } else if (rand < 75) {
+                chestType = 'gold';
+                chestName = 'Złota Skrzynka';
+            } else if (rand < 92) {
+                chestType = 'platinum';
+                chestName = 'Platynowa Skrzynka';
+            } else {
+                chestType = 'ruby';
+                chestName = 'Rubinowa Skrzynka';
+            }
         } else {
-            chestType = 'ruby';
-            chestName = 'Rubinowa Skrzynka';
+            // Normalne szanse
+            if (rand < 50) {
+                chestType = 'common';
+                chestName = 'Zwykła Skrzynka';
+            } else if (rand < 80) {
+                chestType = 'silver';
+                chestName = 'Srebrna Skrzynka';
+            } else if (rand < 90) {
+                chestType = 'gold';
+                chestName = 'Złota Skrzynka';
+            } else if (rand < 99) {
+                chestType = 'platinum';
+                chestName = 'Platynowa Skrzynka';
+            } else {
+                chestType = 'ruby';
+                chestName = 'Rubinowa Skrzynka';
+            }
         }
         
         // Natychmiast otwórz skrzynkę (jak w shopie)
