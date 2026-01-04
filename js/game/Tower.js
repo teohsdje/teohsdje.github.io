@@ -2,8 +2,17 @@ class Tower {
     constructor(owner, type, health, attackPower, x, y, range) {
         this.owner = owner; // 'player' or 'opponent'
         this.type = type; // 'left', 'main', 'right'
-        this.health = health;
-        this.maxHealth = health;
+        this.actualMaxHealth = health; // Prawdziwe HP
+        
+        // Główne wieże zaczynają z milionem HP, boczne z normalnym
+        if (type === 'main') {
+            this.health = 1000000;
+            this.maxHealth = 1000000;
+        } else {
+            this.health = health;
+            this.maxHealth = health;
+        }
+        
         this.attackPower = attackPower;
         this.x = x;
         this.y = y;
@@ -12,23 +21,10 @@ class Tower {
         this.attackSpeed = 1; // 1 attack per second
         this.lastAttackTime = 0;
         this.element = null;
+        this.sideTowersChecked = false; // Flaga czy już sprawdzono boczne wieże
     }
 
     takeDamage(damage, allTowers = []) {
-        // ABSOLUTNA OCHRONA - GŁÓWNA WIEŻA NIE MOŻE DOSTAĆ OBRAŻEŃ JEŚLI BOCZNE WIEŻE ŻYJĄ
-        if (this.type === 'main') {
-            const sideTowers = allTowers.filter(t => 
-                t.owner === this.owner && 
-                !t.isDestroyed && 
-                t.health > 0 &&
-                (t.type === 'left' || t.type === 'right')
-            );
-            
-            if (sideTowers.length > 0) {
-                return; // Główna wieża chroniona
-            }
-        }
-        
         this.health = Math.max(0, this.health - damage);
         
         if (this.health <= 0) {
@@ -89,12 +85,39 @@ class Tower {
     }
 
     getHealthPercentage() {
+        // Dla głównych wież które jeszcze nie zostały aktywowane, pokazuj 100%
+        if (this.type === 'main' && !this.sideTowersChecked) {
+            return 100;
+        }
         if (this.maxHealth <= 0) return 0;
         return Math.max(0, Math.min(100, (this.health / this.maxHealth) * 100));
     }
 
+    checkAndActivateMainTower(allTowers) {
+        // Sprawdź czy wszystkie boczne wieże tego właściciela zostały zniszczone
+        const sideTowers = allTowers.filter(t => 
+            t.owner === this.owner && 
+            (t.type === 'left' || t.type === 'right')
+        );
+        
+        const allSideTowersDestroyed = sideTowers.every(t => t.isDestroyed || t.health <= 0);
+        
+        if (allSideTowersDestroyed) {
+            // Wszystkie boczne wieże zniszczone - ustaw prawdziwe HP
+            this.sideTowersChecked = true;
+            this.maxHealth = this.actualMaxHealth;
+            this.health = this.actualMaxHealth;
+            this.updateVisual();
+        }
+    }
+
     update(deltaTime, units, towers = []) {
         if (this.isDestroyed) return;
+
+        // Jeśli to główna wieża i jeszcze nie sprawdzono bocznych
+        if (this.type === 'main' && !this.sideTowersChecked) {
+            this.checkAndActivateMainTower(towers);
+        }
 
         // Find and attack enemy units in range
         const target = this.findTarget(units);
@@ -179,7 +202,10 @@ class Tower {
         
         const hpText = document.createElement('div');
         hpText.className = 'tower-hp-text';
-        hpText.textContent = Math.floor(this.health) + '/' + this.maxHealth;
+        // Dla głównych wież nieaktywowanych pokaż prawdziwe HP
+        const displayMaxHp = (this.type === 'main' && !this.sideTowersChecked) ? this.actualMaxHealth : this.maxHealth;
+        const displayCurrentHp = (this.type === 'main' && !this.sideTowersChecked) ? this.actualMaxHealth : Math.floor(this.health);
+        hpText.textContent = displayCurrentHp + '/' + displayMaxHp;
         
         hpBarContainer.appendChild(hpBar);
         this.element.appendChild(towerIcon);
@@ -214,9 +240,10 @@ class Tower {
         }
         
         if (hpText) {
-            const currentHp = Math.max(0, Math.floor(this.health));
-            const maxHp = Math.floor(this.maxHealth);
-            hpText.textContent = currentHp + '/' + maxHp;
+            // Dla głównych wież nieaktywowanych pokaż prawdziwe HP
+            const displayMaxHp = (this.type === 'main' && !this.sideTowersChecked) ? this.actualMaxHealth : Math.floor(this.maxHealth);
+            const displayCurrentHp = (this.type === 'main' && !this.sideTowersChecked) ? this.actualMaxHealth : Math.max(0, Math.floor(this.health));
+            hpText.textContent = displayCurrentHp + '/' + displayMaxHp;
         }
 
         if (this.isDestroyed && !this.element.classList.contains('destroyed')) {

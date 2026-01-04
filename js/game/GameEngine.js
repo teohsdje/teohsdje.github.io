@@ -7,7 +7,7 @@ class GameEngine {
         this.playerElixir = 5;
         this.currentBot = null;
         this.gameTime = 0;
-        this.maxGameTime = 120000; // 2 minutes in milliseconds
+        this.maxGameTime = 180000; // 3 minutes in milliseconds
         this.gameContainer = null;
         this.elixirBarElement = null;
         this.gameEnded = false; // Flaga zapobiegająca wielokrotnym wywołaniom endGame()

@@ -42,6 +42,10 @@ class MenuManager {
                         <p>• Naprawiono błąd przedwczesnego końca gry</p>
                     </div>
                     <div class="changelog-section">
+                        <h3>⏱️ Czas Gry</h3>
+                        <p>• Rundy trwają teraz 3 minuty (wcześniej 2 minuty)</p>
+                    </div>
+                    <div class="changelog-section">
                         <h3>🛒 Nowości w Sklepie</h3>
                         <p>• 💎 Konto Premium 24h</p>
                         <p>• Nowe boostery</p>
