@@ -12,6 +12,62 @@ class MenuManager {
         this.updateStatsDisplay();
         this.setupEventListeners();
         this.showScreen('menu');
+        this.checkAndShowChangelog();
+    }
+
+    checkAndShowChangelog() {
+        const currentVersion = '1.5.0';
+        const lastSeenVersion = localStorage.getItem('lastSeenVersion') || '0.0.0';
+        
+        if (lastSeenVersion !== currentVersion) {
+            setTimeout(() => {
+                this.showChangelog(currentVersion);
+                localStorage.setItem('lastSeenVersion', currentVersion);
+            }, 500);
+        }
+    }
+
+    showChangelog(version) {
+        const modal = document.createElement('div');
+        modal.className = 'changelog-modal';
+        modal.innerHTML = `
+            <div class="changelog-content">
+                <div class="changelog-header">
+                    <h2>🎉 NOWA AKTUALIZACJA ${version}! 🎉</h2>
+                </div>
+                <div class="changelog-body">
+                    <div class="changelog-section">
+                        <h3>🏰 Mechanika Wież</h3>
+                        <p>• Główna wieża jest teraz chroniona dopóki żyją wieże boczne</p>
+                        <p>• Naprawiono błąd przedwczesnego końca gry</p>
+                    </div>
+                    <div class="changelog-section">
+                        <h3>🛒 Nowości w Sklepie</h3>
+                        <p>• 💎 Konto Premium 24h</p>
+                        <p>• Nowe boostery</p>
+                        <p>• Posortowane skrzynki</p>
+                    </div>
+                    <div class="changelog-section">
+                        <h3>⚡ Boostery w Grze</h3>
+                        <p>• Wyświetlanie czasu wszystkich aktywnych boosterów</p>
+                        <p>• Premium pokazuje jeden wskaźnik zamiast wszystkich</p>
+                    </div>
+                </div>
+                <button class="changelog-close">Świetnie! ✓</button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        modal.querySelector('.changelog-close').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
     }
 
     loadPlayerStats() {
