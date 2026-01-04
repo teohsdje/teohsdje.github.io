@@ -406,42 +406,43 @@ class ShopManager {
                     left: 50%;
                     transform: translate(-50%, -50%);
                     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-                    padding: 40px;
-                    border-radius: 20px;
-                    box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+                    padding: 18px;
+                    border-radius: 12px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
                     z-index: 10000;
                     animation: chestOpen 0.5s ease-out;
-                    min-width: 350px;
+                    max-width: 240px;
+                    width: 85%;
                     text-align: center;
                 }
                 
                 .notification-title {
-                    font-size: 28px;
+                    font-size: 16px;
                     font-weight: bold;
                     color: white;
-                    margin-bottom: 15px;
-                    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                    margin-bottom: 10px;
+                    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
                 }
                 
                 .chest-name-display {
-                    font-size: 22px;
+                    font-size: 15px;
                     color: #fff;
-                    margin-bottom: 20px;
+                    margin-bottom: 12px;
                     font-weight: 600;
                 }
                 
                 .rewards-list {
                     background: rgba(255,255,255,0.2);
-                    padding: 20px;
-                    border-radius: 10px;
+                    padding: 12px;
+                    border-radius: 8px;
                 }
                 
                 .reward-line {
-                    font-size: 24px;
+                    font-size: 15px;
                     font-weight: bold;
                     color: white;
-                    margin: 10px 0;
-                    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+                    margin: 6px 0;
+                    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
                 }
                 
                 @keyframes chestOpen {
