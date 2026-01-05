@@ -55,6 +55,11 @@ class MenuManager {
                         <p>• Naprawiono mechanikę ochrony wież głównych</p>
                         <p>• Rundy trwają teraz 3 minuty</p>
                     </div>
+                    <div class="changelog-section">
+                        <h3>🏆 Powiadomienia</h3>
+                        <p>• Nowy wygląd ekranu końca rundy</p>
+                        <p>• Przejrzyste wyniki z kolorami</p>
+                    </div>
                 </div>
                 <button class="changelog-close">Świetnie! ✓</button>
             </div>

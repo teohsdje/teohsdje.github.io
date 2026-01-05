@@ -407,10 +407,11 @@ class GameEngine {
         if (result === 'win') {
             const trophyGain = (isTrophyBoostActive || isPremiumActive) ? 60 : 30;
             trophies += trophyGain;
-            message = `Zwycięstwo! +${trophyGain} pucharów`;
-            if (isTrophyBoostActive || isPremiumActive) {
-                message += ' 🏆⚡';
-            }
+            message = {
+                result: 'WYGRANA',
+                trophies: `+${trophyGain}`,
+                boost: (isTrophyBoostActive || isPremiumActive) ? ' 🏆⚡' : ''
+            };
             
             // Szansa na skrzynkę (zwiększona jeśli aktywny booster nagród lub premium)
             // Premium daje 90% szans na skrzynkę (3x nagrody)
@@ -423,9 +424,17 @@ class GameEngine {
             }
         } else if (result === 'lose') {
             trophies -= 10;
-            message = 'Przegrana! -10 pucharów';
+            message = {
+                result: 'PRZEGRANA',
+                trophies: '-10',
+                boost: ''
+            };
         } else {
-            message = 'Remis!';
+            message = {
+                result: 'REMIS',
+                trophies: '0',
+                boost: ''
+            };
         }
         
         // Usuń wygasłe boostery
@@ -446,7 +455,7 @@ class GameEngine {
 
         // Zapisz stan gry po koniec rundy
         if (window.menuManager) {
-            window.menuManager.saveGameState(`Koniec rundy - ${message.includes('Zwycięstwo') ? 'Wygrana' : message.includes('Przegrana') ? 'Przegrana' : 'Remis'}`);
+            window.menuManager.saveGameState(`Koniec rundy - ${message.result}`);
         }
 
         // Show result modal and return to menu after 3 seconds
@@ -470,18 +479,34 @@ class GameEngine {
             left: 50%;
             transform: translate(-50%, -50%);
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 40px;
+            padding: 30px 40px;
             border-radius: 20px;
             color: white;
-            font-size: 24px;
-            font-weight: bold;
             text-align: center;
             z-index: 10000;
             box-shadow: 0 10px 50px rgba(0,0,0,0.5);
             border: 3px solid #ffd700;
-            min-width: 250px;
+            min-width: 280px;
         `;
-        modal.textContent = message + '\n\nPowrót do menu za 3s...';
+        
+        const resultColor = message.result === 'WYGRANA' ? '#4CAF50' : 
+                           message.result === 'PRZEGRANA' ? '#F44336' : '#FFC107';
+        
+        modal.innerHTML = `
+            <div style="font-size: 16px; opacity: 0.9; margin-bottom: 15px; letter-spacing: 2px;">
+                RUNDA ZAKOŃCZONA
+            </div>
+            <div style="font-size: 32px; font-weight: bold; margin-bottom: 15px; color: ${resultColor}; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                ${message.result}
+            </div>
+            <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">
+                RANKING ${message.trophies}${message.boost}
+            </div>
+            <div style="font-size: 14px; opacity: 0.8; margin-top: 20px;">
+                Powrót do menu za 3s...
+            </div>
+        `;
+        
         document.body.appendChild(modal);
 
         setTimeout(() => {
