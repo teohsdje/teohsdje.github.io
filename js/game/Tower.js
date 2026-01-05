@@ -27,6 +27,12 @@ class Tower {
     takeDamage(damage, allTowers = []) {
         this.health = Math.max(0, this.health - damage);
         
+        // Loguj HP głównych wież
+        if (this.type === 'main') {
+            const status = this.sideTowersChecked ? 'AKTYWNA' : 'CHRONIONA';
+            console.log(`🏰 [${this.owner.toUpperCase()}] Główna wieża (${status}) | HP: ${Math.floor(this.health)}/${Math.floor(this.maxHealth)} | Real max: ${this.actualMaxHealth} | DMG: ${Math.floor(damage)}`);
+        }
+        
         if (this.health <= 0) {
             this.health = 0;
             this.isDestroyed = true;
@@ -72,6 +78,9 @@ class Tower {
     }
 
     onDestroy() {
+        if (this.type === 'main') {
+            console.log(`💥 [${this.owner.toUpperCase()}] GŁÓWNA WIEŻA ZNISZCZONA! Final HP: ${Math.floor(this.health)}`);
+        }
         // If main tower is destroyed, destroy side towers
         if (this.type === 'main' && this.element) {
             this.element.classList.add('destroyed');
@@ -104,6 +113,7 @@ class Tower {
         
         if (allSideTowersDestroyed) {
             // Wszystkie boczne wieże zniszczone - ustaw prawdziwe HP
+            console.log(`🏰 [${this.owner.toUpperCase()}] AKTYWACJA GŁÓWNEJ WIEŻY! HP zmienione: 1000000 → ${this.actualMaxHealth}`);
             this.sideTowersChecked = true;
             this.maxHealth = this.actualMaxHealth;
             this.health = this.actualMaxHealth;
