@@ -17,7 +17,7 @@ class MenuManager {
     }
 
     checkAndShowChangelog() {
-        const currentVersion = '1.5.0';
+        const currentVersion = '1.5.2';
         const lastSeenVersion = localStorage.getItem('lastSeenVersion') || '0.0.0';
         
         if (lastSeenVersion !== currentVersion) {
@@ -36,28 +36,24 @@ class MenuManager {
         modal.innerHTML = `
             <div class="changelog-content">
                 <div class="changelog-header">
-                    <h2>🎉 NOWA AKTUALIZACJA ${version}! 🎉</h2>
+                    <h2>🎉 AKTUALIZACJA ${version}! 🎉</h2>
                 </div>
                 <div class="changelog-body">
                     <div class="changelog-section">
-                        <h3>🏰 Mechanika Wież</h3>
-                        <p>• Główna wieża jest teraz chroniona dopóki żyją wieże boczne</p>
-                        <p>• Naprawiono błąd przedwczesnego końca gry</p>
+                        <h3>🎮 Ekran Ładowania</h3>
+                        <p>• Dodano nowy ekran ładowania z logo gry</p>
+                        <p>• Animowany pasek postępu z particles</p>
                     </div>
                     <div class="changelog-section">
-                        <h3>⏱️ Czas Gry</h3>
-                        <p>• Rundy trwają teraz 3 minuty (wcześniej 2 minuty)</p>
+                        <h3>🎁 Dzienne Nagrody</h3>
+                        <p>• 500 monet każdego dnia</p>
+                        <p>• 100 diamentów każdego dnia</p>
+                        <p>• 5 PLN do salda każdego dnia</p>
                     </div>
                     <div class="changelog-section">
-                        <h3>🛒 Nowości w Sklepie</h3>
-                        <p>• 💎 Konto Premium 24h</p>
-                        <p>• Nowe boostery</p>
-                        <p>• Posortowane skrzynki</p>
-                    </div>
-                    <div class="changelog-section">
-                        <h3>⚡ Boostery w Grze</h3>
-                        <p>• Wyświetlanie czasu wszystkich aktywnych boosterów</p>
-                        <p>• Premium pokazuje jeden wskaźnik zamiast wszystkich</p>
+                        <h3>⚔️ System Walki</h3>
+                        <p>• Naprawiono mechanikę ochrony wież głównych</p>
+                        <p>• Rundy trwają teraz 3 minuty</p>
                     </div>
                 </div>
                 <button class="changelog-close">Świetnie! ✓</button>

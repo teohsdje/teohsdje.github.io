@@ -502,11 +502,24 @@ class ShopManager {
                         return;
                     }
                     
+                    // Dodaj 5 PLN
                     const pln = parseFloat(localStorage.getItem('pln') || 0);
                     const newPln = (pln + 5).toFixed(2);
                     localStorage.setItem('pln', newPln);
+                    
+                    // Aktywuj Premium na 1 godzinę
+                    const premiumEndTime = Date.now() + (3600 * 1000); // 1 godzina w milisekundach
+                    localStorage.setItem('premiumEnd', premiumEndTime);
+                    
+                    // Aktywuj wszystkie boostery na 1 godzinę
+                    const boostEndTime = Date.now() + (3600 * 1000);
+                    localStorage.setItem('elixirBoostEnd', boostEndTime);
+                    localStorage.setItem('towerDefenseBoostEnd', boostEndTime);
+                    localStorage.setItem('trophyBoostEnd', boostEndTime);
+                    localStorage.setItem('rewardBoostEnd', boostEndTime);
+                    
                     localStorage.setItem('miloCodeUsed', 'true');
-                    alert('✓ Kod MILO aktywowany!\n+5.00 PLN\n\nKod jest jednorazowy i został zużyty.');
+                    alert('✓ Kod MILO aktywowano!\n+5.00 PLN\n+Premium 1h (Mega Booster)\n\nKod jest jednorazowy i został zużyty.');
                     input.value = '';
                     menuManager.saveGameState('Kod MILO');
                     this.render();
