@@ -292,7 +292,7 @@ class ShopManager {
 
         // Sprawdź walutę i możliwość zakupu
         if (item.currency === 'pln' && pln < item.price) {
-            alert('❌ Nie masz wystarczająco PLN! Użyj kodu PAPARIPA aby doładować portfel.');
+            alert('❌ Nie masz wystarczająco PLN w portfelu!');
             return;
         }
         
