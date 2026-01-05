@@ -356,7 +356,10 @@ class GameEngine {
         const playerMainTower = this.towers.find(t => t.owner === 'player' && t.type === 'main');
         if (!playerMainTower) return;
         
-        if (playerMainTower.health <= 0) {
+        // Sprawdź czy wieża jest aktywna (boczne zniszczone) i ma 0 HP
+        // LUB czy została zniszczona BĘDĄC aktywną
+        if (playerMainTower.sideTowersChecked && playerMainTower.health <= 0) {
+            console.log('🔴 KONIEC GRY: Główna wieża gracza zniszczona (była aktywna)');
             this.endGame('lose');
             return;
         }
@@ -365,7 +368,10 @@ class GameEngine {
         const opponentMainTower = this.towers.find(t => t.owner === 'opponent' && t.type === 'main');
         if (!opponentMainTower) return;
         
-        if (opponentMainTower.health <= 0) {
+        // Sprawdź czy wieża jest aktywna (boczne zniszczone) i ma 0 HP
+        // LUB czy została zniszczona BĘDĄC aktywną
+        if (opponentMainTower.sideTowersChecked && opponentMainTower.health <= 0) {
+            console.log('🟢 KONIEC GRY: Główna wieża przeciwnika zniszczona (była aktywna)');
             this.endGame('win');
             return;
         }

@@ -12,6 +12,7 @@ class MenuManager {
         this.updateStatsDisplay();
         this.setupEventListeners();
         this.showScreen('menu');
+        this.checkDailyReward();
         this.checkAndShowChangelog();
     }
 
@@ -20,9 +21,11 @@ class MenuManager {
         const lastSeenVersion = localStorage.getItem('lastSeenVersion') || '0.0.0';
         
         if (lastSeenVersion !== currentVersion) {
+            // Ustaw flagę PRZED pokazaniem, żeby zapobiec podwójnemu wywołaniu
+            localStorage.setItem('lastSeenVersion', currentVersion);
+            
             setTimeout(() => {
                 this.showChangelog(currentVersion);
-                localStorage.setItem('lastSeenVersion', currentVersion);
             }, 500);
         }
     }
@@ -70,6 +73,218 @@ class MenuManager {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.remove();
+            }
+        });
+    }
+
+    checkDailyReward() {
+        const today = new Date().toDateString(); // Format: "Sun Jan 05 2026"
+        const lastRewardDate = localStorage.getItem('lastDailyReward');
+        
+        // Jeśli ostatnia nagroda była w innym dniu (lub nigdy)
+        if (lastRewardDate !== today) {
+            // Ustaw flagę PRZED pokazaniem, żeby zapobiec podwójnemu wywołaniu
+            localStorage.setItem('lastDailyReward', today);
+            
+            setTimeout(() => {
+                this.showDailyReward();
+            }, 1500); // Pokaż po 1.5s żeby nie kolidowało z changelog
+        }
+    }
+
+    showDailyReward() {
+        // Dodaj nagrody
+        const coins = parseInt(localStorage.getItem('coins') || 0);
+        const gems = parseInt(localStorage.getItem('gems') || 0);
+        const pln = parseFloat(localStorage.getItem('pln') || 0);
+        
+        localStorage.setItem('coins', (coins + 500).toString());
+        localStorage.setItem('gems', (gems + 100).toString());
+        localStorage.setItem('pln', (pln + 5).toFixed(2));
+        
+        // Stwórz modal
+        const modal = document.createElement('div');
+        modal.className = 'daily-reward-modal';
+        modal.innerHTML = `
+            <div class="daily-reward-content">
+                <div class="daily-reward-header">
+                    <h2>🎁 DZIENNA NAGRODA! 🎁</h2>
+                    <p class="daily-subtitle">Witaj z powrotem!</p>
+                </div>
+                <div class="daily-reward-body">
+                    <div class="reward-item">
+                        <span class="reward-icon">💰</span>
+                        <span class="reward-amount">+500</span>
+                        <span class="reward-label">Monet</span>
+                    </div>
+                    <div class="reward-item">
+                        <span class="reward-icon">💎</span>
+                        <span class="reward-amount">+100</span>
+                        <span class="reward-label">Diamentów</span>
+                    </div>
+                    <div class="reward-item">
+                        <span class="reward-icon">💵</span>
+                        <span class="reward-amount">+5 PLN</span>
+                        <span class="reward-label">Salda</span>
+                    </div>
+                </div>
+                <button class="daily-reward-claim">ODBIERZ! ✓</button>
+            </div>
+        `;
+        
+        // Dodaj style
+        if (!document.getElementById('daily-reward-style')) {
+            const style = document.createElement('style');
+            style.id = 'daily-reward-style';
+            style.textContent = `
+                .daily-reward-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 99999;
+                    animation: fadeIn 0.3s ease-out;
+                }
+                
+                .daily-reward-content {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    padding: 30px;
+                    border-radius: 20px;
+                    max-width: 350px;
+                    width: 90%;
+                    text-align: center;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+                    animation: slideInDown 0.5s ease-out;
+                    border: 3px solid #ffd700;
+                }
+                
+                .daily-reward-header h2 {
+                    color: #fff;
+                    font-size: 24px;
+                    margin: 0 0 10px 0;
+                    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                }
+                
+                .daily-subtitle {
+                    color: #ffd700;
+                    font-size: 16px;
+                    margin: 0 0 20px 0;
+                    font-weight: 600;
+                }
+                
+                .daily-reward-body {
+                    background: rgba(255,255,255,0.2);
+                    padding: 20px;
+                    border-radius: 15px;
+                    margin-bottom: 20px;
+                }
+                
+                .reward-item {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 12px;
+                    margin: 8px 0;
+                    background: rgba(255,255,255,0.15);
+                    border-radius: 10px;
+                    animation: rewardPop 0.5s ease-out backwards;
+                }
+                
+                .reward-item:nth-child(1) { animation-delay: 0.2s; }
+                .reward-item:nth-child(2) { animation-delay: 0.3s; }
+                .reward-item:nth-child(3) { animation-delay: 0.4s; }
+                
+                .reward-icon {
+                    font-size: 32px;
+                }
+                
+                .reward-amount {
+                    color: #ffd700;
+                    font-size: 22px;
+                    font-weight: bold;
+                    flex: 1;
+                    text-align: center;
+                    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+                }
+                
+                .reward-label {
+                    color: #fff;
+                    font-size: 14px;
+                    min-width: 70px;
+                    text-align: right;
+                }
+                
+                .daily-reward-claim {
+                    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+                    color: #333;
+                    border: none;
+                    padding: 15px 40px;
+                    border-radius: 10px;
+                    font-size: 18px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    box-shadow: 0 4px 15px rgba(255,215,0,0.4);
+                    transition: transform 0.2s, box-shadow 0.2s;
+                }
+                
+                .daily-reward-claim:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(255,215,0,0.6);
+                }
+                
+                .daily-reward-claim:active {
+                    transform: translateY(0);
+                }
+                
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                
+                @keyframes slideInDown {
+                    from {
+                        transform: translateY(-100px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                }
+                
+                @keyframes rewardPop {
+                    from {
+                        transform: scale(0.5);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: scale(1);
+                        opacity: 1;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(modal);
+        
+        // Aktualizuj wyświetlanie statystyk
+        this.updateStatsDisplay();
+        
+        modal.querySelector('.daily-reward-claim').addEventListener('click', () => {
+            modal.style.animation = 'fadeIn 0.3s ease-out reverse';
+            setTimeout(() => modal.remove(), 300);
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.animation = 'fadeIn 0.3s ease-out reverse';
+                setTimeout(() => modal.remove(), 300);
             }
         });
     }
